@@ -39,6 +39,13 @@ QByteArray CsvFileProcessor::readLineFromCSV(QFile *file, uint16_t maxLen){
         }
     }
     result[readBytes] = 0;
+    // some csv files have \r\n line ending, e.g. my temp. Humidity logger.
+    // check there is a following \n or \r in the read line
+    // if true, skip it, if false rewind
+    file->getChar(&c);
+    if((c != '\n') || (c != '\r')){
+        file->seek(-1);
+    }
     //qDebug() << "readBytes:" << readBytes;
     return result;
 }
@@ -104,6 +111,7 @@ QVector<double> CsvFileProcessor::getDataByName(QString dataName)
     while(!str.isEmpty()){
         strList = str.split(valueSeperator);
         dVal = strList.value(index).toDouble(&ok);
+        //qDebug() << /*"Str:" << strList.value(index)*/ "StrList:" << strList << "value:" << dVal;
         if(!ok){
             dVal = NAN;
             qDebug() << "toDouble error. str:" << strList.value(index);
@@ -119,3 +127,40 @@ QVector<double> CsvFileProcessor::getDataByName(QString dataName)
     }
     return values;
 }
+
+bool CsvFileProcessor::file2TableWidget(QTableWidget *tw)
+{
+    if(!m_file.isOpen()){
+        qDebug() << "No csv file specified";
+        return false;
+    }
+    QString str;
+    QStringList values;
+    values = getCsvFileLabels();
+    tw->clear();
+    tw->setRowCount(0);
+    tw->setColumnCount(0);
+    tw->setColumnCount(values.length());
+    tw->setHorizontalHeaderLabels(values);
+    tw->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+
+    m_file.seek(0); // seek to start of the file
+    readLineFromCSV(&m_file); // skip labels
+    str = QString::fromUtf8(readLineFromCSV(&m_file));
+    int rowNum = 0;
+    while(!str.isEmpty()){
+        tw->insertRow(rowNum);
+        values = str.split(valueSeperator);
+        for(int i=0;i<values.length();++i){
+            QTableWidgetItem *newItem = new QTableWidgetItem(values.at(i).trimmed());
+            tw->setItem(rowNum,i,newItem);
+        }
+        str = QString::fromUtf8(readLineFromCSV(&m_file));
+        ++rowNum;
+    }
+
+
+    return true;
+}
+

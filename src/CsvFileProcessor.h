@@ -5,6 +5,9 @@
 #include <QObject>
 #include <QDebug>
 #include <math.h>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QHeaderView>
 
 
 class CsvFileProcessor : public QObject
@@ -16,7 +19,7 @@ public:
     QStringList getCsvFileLabels();
     QStringList getSampleValuesForLabels();
     QVector<double> getDataByName(QString dataName);
-
+    bool file2TableWidget(QTableWidget *tw);
     // variables
     QString valueSeperator = QString(",");
 

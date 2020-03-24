@@ -43,6 +43,8 @@ void SimpleCsvLogAnalyzer::initPlot(){
     valuePlot = ui->plot1->addGraph();
     //cursorPlot = ui->plot1->addGraph();
 
+
+
     // Allow draggingplot in X axis only (horizontal)
     ui->plot1->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
     ui->plot1->axisRect()->setRangeDrag(Qt::Horizontal);
@@ -170,6 +172,9 @@ void SimpleCsvLogAnalyzer::populateStatisticsLabels(){
     ui->maxValueY->setText("Max Y: " + QString::number(yAxisStats.max));
     ui->spanValueY->setText("Span Y: " + QString::number(yAxisStats.span));
     ui->averageValueY->setText("Average Y: " + QString::number(yAxisStats.average));
+    //Data length
+    ui->totalDataLength->setText(QString("Data Length: %1").arg(yVals.length()));
+
 }
 
 void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
@@ -190,9 +195,10 @@ void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
     m_sampleValues = csvFile.getSampleValuesForLabels();
     ui->dataListY->addItems(m_labels);
     ui->dataListX->addItems(m_labels);
+    csvFile.file2TableWidget(ui->dataTable);
+
 
 }
-
 
 void SimpleCsvLogAnalyzer::on_plotSelected_clicked()
 {
@@ -201,6 +207,15 @@ void SimpleCsvLogAnalyzer::on_plotSelected_clicked()
         ui->statusbar->showMessage("Select a proper data for both x and y axis!");
         return;
     }
+
+    // configure plot style
+    valuePlot->setLineStyle(QCPGraph::lsLine);
+    valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDot, 1));
+    valuePlot->setData(xVals,yVals);
+    QPen pen = valuePlot->pen();
+    pen.setColor(Qt::blue);
+    valuePlot->setPen(pen);
+
     plotType = PLOT_Y_VS_POINT_NUM;
     QString name = ui->dataListY->selectedItems().first()->text();
     qDebug() << "Selected data name:" << name;
@@ -216,13 +231,6 @@ void SimpleCsvLogAnalyzer::on_plotSelected_clicked()
     ui->plot1->xAxis->setLabel("Time Points");
     ui->plot1->yAxis->setLabel(name);
 
-    // configure plot style
-    valuePlot->setLineStyle(QCPGraph::lsLine);
-    valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDot, 1));
-    valuePlot->setData(xVals,yVals);
-    QPen pen = valuePlot->pen();
-    pen.setColor(Qt::blue);
-    valuePlot->setPen(pen);
     setupTracer();
     calculateStatisticalData(false,true);
     populateStatisticsLabels();
