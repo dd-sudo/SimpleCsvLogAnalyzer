@@ -7,9 +7,8 @@
 #include <QDialog>
 #include <QFileDialog>
 #include <QShortcut>
-#include <QTableView>
-#include <QItemDelegate>
-#include <QStandardItemModel>
+#include <QMenu>
+
 #include "QCustomPlot/qcustomplot.h"
 #include "CsvFileProcessor.h"
 
@@ -29,6 +28,12 @@ typedef struct{
     double span = 0;
     double average = 0;
     double median = 0;
+    int length;
+}_statistics;
+
+typedef struct{
+    _statistics x;
+    _statistics y;
 }statistics;
 
 QT_BEGIN_NAMESPACE
@@ -41,11 +46,12 @@ class SimpleCsvLogAnalyzer : public QMainWindow
 
 public:
     // variables
-    QStandardItemModel *dataModel;
 
     // methods
     SimpleCsvLogAnalyzer(QWidget *parent = nullptr);
     ~SimpleCsvLogAnalyzer();
+
+    void plotGraph(QString xName, QString yName);
 
 private slots:
     void on_actionExit_triggered();
@@ -57,8 +63,19 @@ private slots:
     void on_actionZoom_Reset_triggered();
     void on_actionSave_Plot_Image_triggered();
     void on_dataListY_currentRowChanged(int currentRow);
-
     void on_pushButton_clicked();
+    void on_rightTabs_currentChanged(int index);
+    void on_rightTabs_tabBarClicked(int index);
+
+
+    void on_dataTableWidget_customContextMenuRequested(const QPoint &pos);
+
+public slots:
+    // Slots for data table view custom context menu options
+    void hideThis();
+    void plotThis();
+    void statisticsForThis();
+
 
 private:
     // variables
@@ -68,11 +85,13 @@ private:
     QCPCurve *verticalLine;
     QShortcut *moveRight,*moveLeft;
     QSplashScreen *loadingSplash;
+    QMenu *tableViewContextMenu;
     double mousePlotCoordX = 0;
     double mousePlotCoordY = 0;
     QVector<double> xVals;
     QVector<double> yVals;
-    statistics xAxisStats,yAxisStats;
+    statistics stats;
+
     QStringList m_labels,m_sampleValues;
     int plotType = PLOT_NONE;
 
@@ -88,7 +107,7 @@ private:
     QList<double> calculateSlopeOfCurve(int valueIndex);
     void clearPlotNDisableTracer();
     void setupTracer();
-    void calculateStatisticalData(bool calc4xAxis, bool calc4yAxis);
+    statistics calculateStatisticalData(QVector<double> x, QVector<double> y);
     void populateStatisticsLabels();
     void clearStatisticsLabels();
 

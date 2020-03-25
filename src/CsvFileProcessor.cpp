@@ -2,6 +2,7 @@
 
 #include <QApplication>
 
+
 CsvFileProcessor::CsvFileProcessor(QObject *parent) : QObject(parent)
 {
 
@@ -128,6 +129,42 @@ QVector<double> CsvFileProcessor::getDataByName(QString dataName)
         qDebug() << "str:" << str << "first val:" << values.first() << "last val:" << values.last() << "value count" << values.length();
     }
     return values;
+}
+
+bool CsvFileProcessor::file2TableWidget(QTableWidget *tw)
+{
+    if(!m_file.isOpen()){
+        qDebug() << "No csv file specified";
+        return false;
+    }
+    QString str;
+    QStringList values;
+    values = getCsvFileLabels();
+    tw->clear();
+    tw->setRowCount(0);
+    tw->setColumnCount(0);
+    tw->setColumnCount(values.length());
+    tw->setHorizontalHeaderLabels(values);
+    tw->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+
+    m_file.seek(0); // seek to start of the file
+    readLineFromCSV(&m_file); // skip labels
+    str = QString::fromUtf8(readLineFromCSV(&m_file));
+    int rowNum = 0;
+    while(!str.isEmpty()){
+        tw->insertRow(rowNum);
+        values = str.split(valueSeperator);
+        for(int i=0;i<values.length();++i){
+            QTableWidgetItem *newItem = new QTableWidgetItem(values.at(i).trimmed());
+            tw->setItem(rowNum,i,newItem);
+        }
+        str = QString::fromUtf8(readLineFromCSV(&m_file));
+        ++rowNum;
+    }
+
+
+    return true;
 }
 
 bool CsvFileProcessor::file2DataModel(QStandardItemModel *mdl)

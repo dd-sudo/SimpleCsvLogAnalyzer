@@ -23,7 +23,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
-#include <QtWidgets/QTableView>
+#include <QtWidgets/QTableWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include "src/QCustomPlot/qcustomplot.h"
@@ -57,7 +57,7 @@ public:
     QVBoxLayout *verticalLayout_4;
     QWidget *dataTableViewTab;
     QVBoxLayout *verticalLayout_5;
-    QTableView *dataTableView;
+    QTableWidget *dataTableWidget;
     QHBoxLayout *dataStatisticsLayout;
     QFrame *line_8;
     QLabel *minValueX;
@@ -196,18 +196,20 @@ public:
         dataTableViewTab->setObjectName(QString::fromUtf8("dataTableViewTab"));
         verticalLayout_5 = new QVBoxLayout(dataTableViewTab);
         verticalLayout_5->setObjectName(QString::fromUtf8("verticalLayout_5"));
-        dataTableView = new QTableView(dataTableViewTab);
-        dataTableView->setObjectName(QString::fromUtf8("dataTableView"));
-        dataTableView->setFrameShape(QFrame::StyledPanel);
-        dataTableView->setFrameShadow(QFrame::Sunken);
-        dataTableView->setLineWidth(1);
-        dataTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        dataTableView->setAlternatingRowColors(true);
-        dataTableView->setSelectionBehavior(QAbstractItemView::SelectColumns);
-        dataTableView->setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
-        dataTableView->setCornerButtonEnabled(false);
+        dataTableWidget = new QTableWidget(dataTableViewTab);
+        dataTableWidget->setObjectName(QString::fromUtf8("dataTableWidget"));
+        dataTableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+        dataTableWidget->setFrameShape(QFrame::StyledPanel);
+        dataTableWidget->setFrameShadow(QFrame::Sunken);
+        dataTableWidget->setLineWidth(1);
+        dataTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        dataTableWidget->setAlternatingRowColors(true);
+        dataTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+        dataTableWidget->setSelectionBehavior(QAbstractItemView::SelectColumns);
+        dataTableWidget->setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+        dataTableWidget->setCornerButtonEnabled(false);
 
-        verticalLayout_5->addWidget(dataTableView);
+        verticalLayout_5->addWidget(dataTableWidget);
 
         rightTabs->addTab(dataTableViewTab, QString());
 
@@ -371,7 +373,7 @@ public:
         retranslateUi(SimpleCsvLogAnalyzer);
 
         leftTab->setCurrentIndex(0);
-        rightTabs->setCurrentIndex(1);
+        rightTabs->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(SimpleCsvLogAnalyzer);

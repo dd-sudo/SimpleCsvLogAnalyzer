@@ -13,10 +13,17 @@ SimpleCsvLogAnalyzer::SimpleCsvLogAnalyzer(QWidget *parent)
     connect(moveRight,SIGNAL(activated()),this,SLOT(moveRigthPressed()));
 
     QPixmap pixmap(":/images/images/timer.png");
-    loadingSplash = new QSplashScreen(pixmap);
+    loadingSplash = new QSplashScreen(pixmap,Qt::SplashScreen);
+
+    // init dataTableView custom context menu
+    tableViewContextMenu = new QMenu("Data Table Operations");
+    tableViewContextMenu->addAction("Plot",this,SLOT(plotThis()));
+    tableViewContextMenu->addAction("Statistics",this,SLOT(statisticsForThis()));
+    tableViewContextMenu->addAction("Hide",this,SLOT(hideThis()));
 
     initPlot();
     initDataTable();
+
 }
 
 SimpleCsvLogAnalyzer::~SimpleCsvLogAnalyzer()
@@ -71,13 +78,8 @@ void SimpleCsvLogAnalyzer::initPlot(){
 
 void SimpleCsvLogAnalyzer::initDataTable()
 {
-    // Create a new model with row=col=0
-    dataModel = new QStandardItemModel(0,0,this);
-
-    // Attach the model to the view
-    ui->dataTableView->setModel(dataModel);
     // Auto adjust horizontal header labels
-    ui->dataTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->dataTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 void SimpleCsvLogAnalyzer::clearPlotNDisableTracer(){
@@ -97,7 +99,7 @@ void SimpleCsvLogAnalyzer::zoomReset(){
     // rescales Y axis using min and max of Y axis values, with a margin of 1/10th of the span
     // to provide better visibilty for peaks and valleys in plot curve
     valuePlot->rescaleKeyAxis();
-    ui->plot1->yAxis->setRange(yAxisStats.min-0.1*yAxisStats.span,yAxisStats.max+0.1*yAxisStats.span);
+    ui->plot1->yAxis->setRange(stats.y.min-0.1*stats.y.span,stats.y.max+0.1*stats.y.span);
     ui->plot1->replot();
 }
 
@@ -112,81 +114,92 @@ QList<double> SimpleCsvLogAnalyzer::calculateSlopeOfCurve(int valueIndex){
     return ret;
 }
 
-void SimpleCsvLogAnalyzer::calculateStatisticalData(bool calc4xAxis, bool calc4yAxis){
-    if(calc4xAxis){
-        xAxisStats.min = std::numeric_limits<double>::max();
-        xAxisStats.max = std::numeric_limits<double>::min();
-        xAxisStats.span = 0;
-        xAxisStats.average = 0;
-        int averageArrayLen = xVals.length();
-        if(xVals.length()>0){
+statistics SimpleCsvLogAnalyzer::calculateStatisticalData(QVector<double> x, QVector<double> y){
+    statistics ret;
+        ret.x.min = std::numeric_limits<double>::max();
+        ret.x.max = std::numeric_limits<double>::min();
+        ret.x.span = 0;
+        ret.x.average = 0;
+        int averageArrayLen = x.length();
+        if(x.length()>0){
             double accu = 0;
             double tmp;
-            for(int i=0; i<xVals.length(); ++i){
-                tmp = xVals[i];
+            for(int i=0; i<x.length(); ++i){
+                tmp = x[i];
                 if(!qIsNaN(tmp)){
                     accu += tmp;
                 } else {
                     --averageArrayLen;
                 }
-                if(tmp<xAxisStats.min){
-                    xAxisStats.min = tmp;
+                if(tmp<ret.x.min){
+                    ret.x.min = tmp;
                 }
-                if(tmp>xAxisStats.max){
-                    xAxisStats.max = tmp;
+                if(tmp>ret.x.max){
+                    ret.x.max = tmp;
                 }
             }
-            xAxisStats.average = accu/averageArrayLen;
-            xAxisStats.span = xAxisStats.max - xAxisStats.min;
+            ret.x.average = accu/averageArrayLen;
+            ret.x.span = ret.x.max - ret.x.min;
         } else {
             qDebug() << "No data in array!";
+            ret.x.min = NAN;
+            ret.x.max = NAN;
+            ret.x.span = NAN;
+            ret.x.average = NAN;
         }
-    }
+        ret.x.length = x.length();
 
-    if(calc4yAxis){
-        yAxisStats.min = std::numeric_limits<double>::max();
-        yAxisStats.max = std::numeric_limits<double>::min();
-        yAxisStats.span = 0;
-        yAxisStats.average = 0;
-        int averageArrayLen = yVals.length();
-        if(yVals.length()>0){
+
+        ret.y.min = std::numeric_limits<double>::max();
+        ret.y.max = std::numeric_limits<double>::min();
+        ret.y.span = 0;
+        ret.y.average = 0;
+        averageArrayLen = y.length();
+        if(y.length()>0){
             double accu = 0;
             double tmp;
-            for(int i=0; i<yVals.length(); ++i){
-                tmp = yVals[i];
+            for(int i=0; i<y.length(); ++i){
+                tmp = y[i];
                 if(!qIsNaN(tmp)){
                     accu += tmp;
                 } else {
                     --averageArrayLen;
                 }
-                if(tmp<yAxisStats.min){
-                    yAxisStats.min = tmp;
+                if(tmp<ret.y.min){
+                    ret.y.min = tmp;
                 }
-                if(tmp>yAxisStats.max){
-                    yAxisStats.max = tmp;
+                if(tmp>ret.y.max){
+                    ret.y.max = tmp;
                 }
             }
-            yAxisStats.average = accu/averageArrayLen;
-            yAxisStats.span = yAxisStats.max - yAxisStats.min;
+            ret.y.average = accu/averageArrayLen;
+            ret.y.span = ret.y.max - ret.y.min;
         } else {
             qDebug() << "No data in array!";
+            ret.y.min = NAN;
+            ret.y.max = NAN;
+            ret.y.span = NAN;
+            ret.y.average = NAN;
         }
-    }
+        ret.y.length = y.length();
+
+        return ret;
+
 }
 
 void SimpleCsvLogAnalyzer::populateStatisticsLabels(){
     // X Axis
-    ui->minValueX->setText("Min X: " + QString::number(xAxisStats.min));
-    ui->maxValueX->setText("Max X: " + QString::number(xAxisStats.max));
-    ui->spanValueX->setText("Span X: " + QString::number(xAxisStats.span));
-    ui->averageValueX->setText("Average X: " + QString::number(xAxisStats.average));
+    ui->minValueX->setText("Min X: " + QString::number(stats.x.min));
+    ui->maxValueX->setText("Max X: " + QString::number(stats.x.max));
+    ui->spanValueX->setText("Span X: " + QString::number(stats.x.span));
+    ui->averageValueX->setText("Average X: " + QString::number(stats.x.average));
     // Y Axis
-    ui->minValueY->setText("Min Y: " + QString::number(yAxisStats.min));
-    ui->maxValueY->setText("Max Y: " + QString::number(yAxisStats.max));
-    ui->spanValueY->setText("Span Y: " + QString::number(yAxisStats.span));
-    ui->averageValueY->setText("Average Y: " + QString::number(yAxisStats.average));
+    ui->minValueY->setText("Min Y: " + QString::number(stats.y.min));
+    ui->maxValueY->setText("Max Y: " + QString::number(stats.y.max));
+    ui->spanValueY->setText("Span Y: " + QString::number(stats.y.span));
+    ui->averageValueY->setText("Average Y: " + QString::number(stats.y.average));
     //Data length
-    ui->totalDataLength->setText(QString("Data Length: %1").arg(yVals.length()));
+    ui->totalDataLength->setText(QString("Data Length: %1").arg(stats.y.length));
 
 }
 
@@ -214,8 +227,8 @@ void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
         qDebug() << "Dosya seçilmedi";
         return;
     }
-
-
+    ui->rightTabs->setCurrentIndex(0);
+    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
     loadingSplash->show();
     qApp->processEvents();
 
@@ -230,8 +243,63 @@ void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
     m_sampleValues = csvFile.getSampleValuesForLabels();
     ui->dataListY->addItems(m_labels);
     ui->dataListX->addItems(m_labels);
-    csvFile.file2DataModel(dataModel);
+    csvFile.file2TableWidget(ui->dataTableWidget);
 
+    qApp->processEvents();
+    loadingSplash->close();
+
+}
+
+void SimpleCsvLogAnalyzer::plotGraph(QString xName, QString yName)
+{
+    if(xName.isEmpty() && yName.isEmpty()){
+        qDebug() << "Select label(s) before plotting...";
+        return;
+    }
+    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
+    loadingSplash->show();
+    qApp->processEvents();
+    clearPlotNDisableTracer();
+
+    if(xName.isEmpty()){
+        plotType = PLOT_Y_VS_POINT_NUM;
+        yVals = csvFile.getDataByName(yName);
+        xVals.resize(yVals.length());
+        for(int i=0;i<xVals.length();++i){
+            xVals[i] = i;
+        }
+        ui->plot1->xAxis->setLabel("Time Points");
+        ui->plot1->yAxis->setLabel(yName);
+        // configure plot style
+        valuePlot->setLineStyle(QCPGraph::lsLine);
+        valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDot, 1));
+        valuePlot->setData(xVals,yVals);
+        QPen pen = valuePlot->pen();
+        pen.setColor(Qt::blue);
+        valuePlot->setPen(pen);
+    } else {
+        plotType = PLOT_Y_VS_X;
+        yVals = csvFile.getDataByName(yName);
+        xVals  = csvFile.getDataByName(xName);
+        ui->plot1->xAxis->setLabel(xName);
+        ui->plot1->yAxis->setLabel(yName);
+        // configure plot style
+        valuePlot->setLineStyle(QCPGraph::lsNone);
+        valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssPlus, 3));
+        valuePlot->setData(xVals,yVals);
+        QPen pen = valuePlot->pen();
+        pen.setColor(Qt::red);
+        valuePlot->setPen(pen);
+    }
+
+    qDebug() << xVals.length() << yVals.length();
+    valuePlot->setData(xVals,yVals);
+
+    setupTracer();
+    stats = calculateStatisticalData(xVals,yVals);
+    populateStatisticsLabels();
+    zoomReset();
+    ui->rightTabs->setCurrentIndex(0);
     qApp->processEvents();
     loadingSplash->close();
 
@@ -244,37 +312,10 @@ void SimpleCsvLogAnalyzer::on_plotSelected_clicked()
         ui->statusbar->showMessage("Select a proper data for both x and y axis!");
         return;
     }
-    loadingSplash->show();
-    qApp->processEvents();
-    // configure plot style
-    valuePlot->setLineStyle(QCPGraph::lsLine);
-    valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDot, 1));
-    valuePlot->setData(xVals,yVals);
-    QPen pen = valuePlot->pen();
-    pen.setColor(Qt::blue);
-    valuePlot->setPen(pen);
 
-    plotType = PLOT_Y_VS_POINT_NUM;
     QString name = ui->dataListY->selectedItems().first()->text();
-    qDebug() << "Selected data name:" << name;
-    clearPlotNDisableTracer();
-    yVals = csvFile.getDataByName(name);
-    xVals.resize(yVals.length());
-    for(int i=0;i<xVals.length();++i){
-        xVals[i] = i;
-    }
-    qDebug() << xVals.length() << yVals.length();
-    valuePlot->setData(xVals,yVals);
 
-    ui->plot1->xAxis->setLabel("Time Points");
-    ui->plot1->yAxis->setLabel(name);
-
-    setupTracer();
-    calculateStatisticalData(false,true);
-    populateStatisticsLabels();
-    zoomReset();
-    qApp->processEvents();
-    loadingSplash->close();
+    plotGraph("",name);
 
 }
 
@@ -285,35 +326,11 @@ void SimpleCsvLogAnalyzer::on_plotSelectedXY_clicked()
         ui->statusbar->showMessage("Select a proper data for both x and y axis!");
         return;
     }
-    loadingSplash->show();
-    qApp->processEvents();
-    plotType = PLOT_Y_VS_X;
+
     QString nameY = ui->dataListY->selectedItems().first()->text();
     QString nameX = ui->dataListX->selectedItems().first()->text();
-    clearPlotNDisableTracer();
-    qDebug() << "X:" << nameX << "Y:" << nameY;
-    qDebug() << "Selected data name:" << nameY;
-    yVals = csvFile.getDataByName(nameY);
-    xVals  = csvFile.getDataByName(nameX);
-    qDebug() << xVals.length() << yVals.length();
-    //ui->plot1->legend->setVisible(true);
 
-    // configure plot style
-    valuePlot->setLineStyle(QCPGraph::lsNone);
-    valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssPlus, 3));
-    valuePlot->setData(xVals,yVals);
-    QPen pen = valuePlot->pen();
-    pen.setColor(Qt::red);
-    valuePlot->setPen(pen);
-
-    ui->plot1->xAxis->setLabel(nameX);
-    ui->plot1->yAxis->setLabel(nameY);
-    setupTracer();
-    calculateStatisticalData(true,true);
-    populateStatisticsLabels();
-    zoomReset();
-    qApp->processEvents();
-    loadingSplash->close();
+    plotGraph(nameX,nameY);
 }
 
 void SimpleCsvLogAnalyzer::slotMouseMove(QMouseEvent *event)
@@ -389,6 +406,7 @@ void SimpleCsvLogAnalyzer::on_actionSave_Plot_Image_triggered()
                                                     .arg(ui->plot1->yAxis->label().remove(QRegExp("[^a-zA-Z\\d\\s]")))
                                                     .arg(QDateTime::currentDateTime().toString("yyyy_MM_dd_hh_mm_ss")),
                                                     "*.jpg");
+    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
     loadingSplash->show();
     qApp->processEvents();
     qDebug() << "filePath:" << filePath;
@@ -428,3 +446,77 @@ void SimpleCsvLogAnalyzer::on_pushButton_clicked()
 {
 
 }
+
+void SimpleCsvLogAnalyzer::on_rightTabs_currentChanged(int index)
+{
+    // Close loading indicator
+    loadingSplash->close();
+}
+
+void SimpleCsvLogAnalyzer::on_rightTabs_tabBarClicked(int index)
+{
+    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
+    loadingSplash->show();
+    qApp->processEvents();
+}
+
+void SimpleCsvLogAnalyzer::on_dataTableWidget_customContextMenuRequested(const QPoint &pos)
+{
+    Q_UNUSED(pos)
+    tableViewContextMenu->exec(QCursor::pos());
+}
+
+void SimpleCsvLogAnalyzer::hideThis()
+{
+    QList<QTableWidgetItem*> items = ui->dataTableWidget->selectedItems();
+    if(items.isEmpty()){
+        qDebug() << "no selection";
+        return;
+    }
+    qDebug() << "Hide: Selected column:" << items.first()->column()
+             << "name:" << ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text();
+    ui->dataTableWidget->hideColumn(items.first()->column());
+}
+
+void SimpleCsvLogAnalyzer::plotThis()
+{
+    QList<QTableWidgetItem*> items = ui->dataTableWidget->selectedItems();
+    if(items.isEmpty()){
+        qDebug() << "no selection";
+        return;
+    }
+    qDebug() << "Plot: Selected column:" << items.first()->column()
+             << "name:" << ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text();
+    plotGraph("",ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text());
+
+}
+
+void SimpleCsvLogAnalyzer::statisticsForThis()
+{
+    QList<QTableWidgetItem*> items = ui->dataTableWidget->selectedItems();
+    if(items.isEmpty()){
+        qDebug() << "no selection";
+        return;
+    }
+    qDebug() << "Statistics: Selected column:" << items.first()->column()
+             << "name:" << ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text();
+    statistics tmp = calculateStatisticalData(QVector<double>(),csvFile.getDataByName(ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text()));
+    QString s = QString("Statistics for selected data               \n"
+                         "Data name:%1\n"
+                         "Min:%2\n"
+                         "Max:%3\n"
+                         "Average:%4\n"
+                         "Span:%5\n"
+                         "Length:%6")
+            .arg(ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text())
+            .arg(tmp.y.min)
+            .arg(tmp.y.max)
+            .arg(tmp.y.average)
+            .arg(tmp.y.span)
+            .arg(tmp.y.length);
+    QMessageBox msg;
+    msg.setText(s);
+    msg.exec();
+}
+
+
