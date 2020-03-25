@@ -1,5 +1,7 @@
 #include "CsvFileProcessor.h"
 
+#include <QApplication>
+
 CsvFileProcessor::CsvFileProcessor(QObject *parent) : QObject(parent)
 {
 
@@ -101,7 +103,7 @@ QVector<double> CsvFileProcessor::getDataByName(QString dataName)
         qDebug() << "No matching data name";
         return values;
     }
-    qDebug() << "Data index:" << index;
+    //qDebug() << "Data index:" << index;
     // Gather values
     QString str;
     QStringList strList;
@@ -114,7 +116,7 @@ QVector<double> CsvFileProcessor::getDataByName(QString dataName)
         //qDebug() << /*"Str:" << strList.value(index)*/ "StrList:" << strList << "value:" << dVal;
         if(!ok){
             dVal = NAN;
-            qDebug() << "toDouble error. str:" << strList.value(index);
+            //qDebug() << "toDouble error. str:" << strList.value(index);
             //break;
         }
         values.append(dVal);
@@ -128,39 +130,72 @@ QVector<double> CsvFileProcessor::getDataByName(QString dataName)
     return values;
 }
 
-bool CsvFileProcessor::file2TableWidget(QTableWidget *tw)
+bool CsvFileProcessor::file2DataModel(QStandardItemModel *mdl)
 {
     if(!m_file.isOpen()){
         qDebug() << "No csv file specified";
         return false;
     }
+    if(mdl == nullptr){
+        qDebug() << "Model error!";
+        return false;
+    }
     QString str;
     QStringList values;
+    QModelIndex index;
     values = getCsvFileLabels();
-    tw->clear();
-    tw->setRowCount(0);
-    tw->setColumnCount(0);
-    tw->setColumnCount(values.length());
-    tw->setHorizontalHeaderLabels(values);
-    tw->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
+    mdl->clear();
+    mdl->setColumnCount(values.length());
+    mdl->setHorizontalHeaderLabels(values);
 
     m_file.seek(0); // seek to start of the file
     readLineFromCSV(&m_file); // skip labels
     str = QString::fromUtf8(readLineFromCSV(&m_file));
     int rowNum = 0;
     while(!str.isEmpty()){
-        tw->insertRow(rowNum);
+        mdl->insertRow(rowNum);
         values = str.split(valueSeperator);
         for(int i=0;i<values.length();++i){
-            QTableWidgetItem *newItem = new QTableWidgetItem(values.at(i).trimmed());
-            tw->setItem(rowNum,i,newItem);
+            index =  mdl->index(rowNum,i,QModelIndex());
+            mdl->setData(index,values.at(i).trimmed());
         }
         str = QString::fromUtf8(readLineFromCSV(&m_file));
         ++rowNum;
+        //QApplication::processEvents();
     }
 
-
-    return true;
 }
+
+//bool CsvFileProcessor::file2TableWidget(QTableWidget *tw)
+//{
+//    if(!m_file.isOpen()){
+//        qDebug() << "No csv file specified";
+//        return false;
+//    }
+//    QString str;
+//    QStringList values;
+//    values = getCsvFileLabels();
+//    tw->clear();
+//    tw->setRowCount(0);
+//    tw->setColumnCount(0);
+//    tw->setColumnCount(values.length());
+//    tw->setHorizontalHeaderLabels(values);
+//    tw->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+//    m_file.seek(0); // seek to start of the file
+//    readLineFromCSV(&m_file); // skip labels
+//    str = QString::fromUtf8(readLineFromCSV(&m_file));
+//    int rowNum = 0;
+//    while(!str.isEmpty()){
+//        tw->insertRow(rowNum);
+//        values = str.split(valueSeperator);
+//        for(int i=0;i<values.length();++i){
+//            QTableWidgetItem *newItem = new QTableWidgetItem(values.at(i).trimmed());
+//            tw->setItem(rowNum,i,newItem);
+//        }
+//        str = QString::fromUtf8(readLineFromCSV(&m_file));
+//        ++rowNum;
+//    }
+//    return true;
+//}
 

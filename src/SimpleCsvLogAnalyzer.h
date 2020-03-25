@@ -7,7 +7,9 @@
 #include <QDialog>
 #include <QFileDialog>
 #include <QShortcut>
-
+#include <QTableView>
+#include <QItemDelegate>
+#include <QStandardItemModel>
 #include "QCustomPlot/qcustomplot.h"
 #include "CsvFileProcessor.h"
 
@@ -39,6 +41,7 @@ class SimpleCsvLogAnalyzer : public QMainWindow
 
 public:
     // variables
+    QStandardItemModel *dataModel;
 
     // methods
     SimpleCsvLogAnalyzer(QWidget *parent = nullptr);
@@ -55,6 +58,8 @@ private slots:
     void on_actionSave_Plot_Image_triggered();
     void on_dataListY_currentRowChanged(int currentRow);
 
+    void on_pushButton_clicked();
+
 private:
     // variables
     Ui::SimpleCsvLogAnalyzer *ui;
@@ -62,6 +67,7 @@ private:
     QCPItemTracer *tracer;
     QCPCurve *verticalLine;
     QShortcut *moveRight,*moveLeft;
+    QSplashScreen *loadingSplash;
     double mousePlotCoordX = 0;
     double mousePlotCoordY = 0;
     QVector<double> xVals;
@@ -77,11 +83,14 @@ private:
     // methods
     void cleanUpAndExit();
     void initPlot();
+    void initDataTable();
     void zoomReset();
     QList<double> calculateSlopeOfCurve(int valueIndex);
     void clearPlotNDisableTracer();
     void setupTracer();
     void calculateStatisticalData(bool calc4xAxis, bool calc4yAxis);
     void populateStatisticsLabels();
+    void clearStatisticsLabels();
+
 };
 #endif // 

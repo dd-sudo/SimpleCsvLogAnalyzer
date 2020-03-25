@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'SimpleCsvLogAnalyzer.ui'
 **
-** Created by: Qt User Interface Compiler version 5.12.2
+** Created by: Qt User Interface Compiler version 5.12.5
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -23,7 +23,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
-#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QTableView>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include "src/QCustomPlot/qcustomplot.h"
@@ -39,25 +39,26 @@ public:
     QAction *actionSave_Plot_Image;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_2;
-    QHBoxLayout *horizontalLayout;
-    QTabWidget *verticalTabWidget;
+    QHBoxLayout *mainHorizontalLayout;
+    QTabWidget *leftTab;
     QWidget *verticalTabWidgetPage1;
     QVBoxLayout *verticalLayout;
     QLabel *label_2;
+    QPushButton *pushButton;
     QListWidget *dataListY;
     QLabel *label_3;
     QListWidget *dataListX;
     QPushButton *plotSelected;
     QPushButton *plotSelectedXY;
-    QTabWidget *tabWidget;
-    QWidget *tab;
+    QTabWidget *rightTabs;
+    QWidget *plotTab;
     QVBoxLayout *verticalLayout_3;
     QCustomPlot *plot1;
     QVBoxLayout *verticalLayout_4;
-    QWidget *tab_2;
+    QWidget *dataTableViewTab;
     QVBoxLayout *verticalLayout_5;
-    QTableWidget *dataTable;
-    QHBoxLayout *horizontalLayout_2;
+    QTableView *dataTableView;
+    QHBoxLayout *dataStatisticsLayout;
     QFrame *line_8;
     QLabel *minValueX;
     QFrame *line_2;
@@ -99,16 +100,16 @@ public:
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         verticalLayout_2 = new QVBoxLayout(centralwidget);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        verticalTabWidget = new QTabWidget(centralwidget);
-        verticalTabWidget->setObjectName(QString::fromUtf8("verticalTabWidget"));
+        mainHorizontalLayout = new QHBoxLayout();
+        mainHorizontalLayout->setObjectName(QString::fromUtf8("mainHorizontalLayout"));
+        leftTab = new QTabWidget(centralwidget);
+        leftTab->setObjectName(QString::fromUtf8("leftTab"));
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
-        sizePolicy.setHeightForWidth(verticalTabWidget->sizePolicy().hasHeightForWidth());
-        verticalTabWidget->setSizePolicy(sizePolicy);
-        verticalTabWidget->setMaximumSize(QSize(250, 16777215));
+        sizePolicy.setHeightForWidth(leftTab->sizePolicy().hasHeightForWidth());
+        leftTab->setSizePolicy(sizePolicy);
+        leftTab->setMaximumSize(QSize(250, 16777215));
         verticalTabWidgetPage1 = new QWidget();
         verticalTabWidgetPage1->setObjectName(QString::fromUtf8("verticalTabWidgetPage1"));
         verticalLayout = new QVBoxLayout(verticalTabWidgetPage1);
@@ -125,6 +126,11 @@ public:
         label_2->setSizePolicy(sizePolicy1);
 
         verticalLayout->addWidget(label_2);
+
+        pushButton = new QPushButton(verticalTabWidgetPage1);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+
+        verticalLayout->addWidget(pushButton);
 
         dataListY = new QListWidget(verticalTabWidgetPage1);
         dataListY->setObjectName(QString::fromUtf8("dataListY"));
@@ -166,17 +172,17 @@ public:
 
         verticalLayout->addWidget(plotSelectedXY);
 
-        verticalTabWidget->addTab(verticalTabWidgetPage1, QString());
+        leftTab->addTab(verticalTabWidgetPage1, QString());
 
-        horizontalLayout->addWidget(verticalTabWidget);
+        mainHorizontalLayout->addWidget(leftTab);
 
-        tabWidget = new QTabWidget(centralwidget);
-        tabWidget->setObjectName(QString::fromUtf8("tabWidget"));
-        tab = new QWidget();
-        tab->setObjectName(QString::fromUtf8("tab"));
-        verticalLayout_3 = new QVBoxLayout(tab);
+        rightTabs = new QTabWidget(centralwidget);
+        rightTabs->setObjectName(QString::fromUtf8("rightTabs"));
+        plotTab = new QWidget();
+        plotTab->setObjectName(QString::fromUtf8("plotTab"));
+        verticalLayout_3 = new QVBoxLayout(plotTab);
         verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
-        plot1 = new QCustomPlot(tab);
+        plot1 = new QCustomPlot(plotTab);
         plot1->setObjectName(QString::fromUtf8("plot1"));
         sizePolicy.setHeightForWidth(plot1->sizePolicy().hasHeightForWidth());
         plot1->setSizePolicy(sizePolicy);
@@ -185,160 +191,160 @@ public:
 
         verticalLayout_3->addWidget(plot1);
 
-        tabWidget->addTab(tab, QString());
-        tab_2 = new QWidget();
-        tab_2->setObjectName(QString::fromUtf8("tab_2"));
-        verticalLayout_5 = new QVBoxLayout(tab_2);
+        rightTabs->addTab(plotTab, QString());
+        dataTableViewTab = new QWidget();
+        dataTableViewTab->setObjectName(QString::fromUtf8("dataTableViewTab"));
+        verticalLayout_5 = new QVBoxLayout(dataTableViewTab);
         verticalLayout_5->setObjectName(QString::fromUtf8("verticalLayout_5"));
-        dataTable = new QTableWidget(tab_2);
-        dataTable->setObjectName(QString::fromUtf8("dataTable"));
-        dataTable->setFrameShape(QFrame::StyledPanel);
-        dataTable->setFrameShadow(QFrame::Sunken);
-        dataTable->setLineWidth(1);
-        dataTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        dataTable->setAlternatingRowColors(true);
-        dataTable->setSelectionBehavior(QAbstractItemView::SelectColumns);
-        dataTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
-        dataTable->setCornerButtonEnabled(false);
+        dataTableView = new QTableView(dataTableViewTab);
+        dataTableView->setObjectName(QString::fromUtf8("dataTableView"));
+        dataTableView->setFrameShape(QFrame::StyledPanel);
+        dataTableView->setFrameShadow(QFrame::Sunken);
+        dataTableView->setLineWidth(1);
+        dataTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        dataTableView->setAlternatingRowColors(true);
+        dataTableView->setSelectionBehavior(QAbstractItemView::SelectColumns);
+        dataTableView->setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+        dataTableView->setCornerButtonEnabled(false);
 
-        verticalLayout_5->addWidget(dataTable);
+        verticalLayout_5->addWidget(dataTableView);
 
-        tabWidget->addTab(tab_2, QString());
+        rightTabs->addTab(dataTableViewTab, QString());
 
-        horizontalLayout->addWidget(tabWidget);
+        mainHorizontalLayout->addWidget(rightTabs);
 
 
-        verticalLayout_2->addLayout(horizontalLayout);
+        verticalLayout_2->addLayout(mainHorizontalLayout);
 
-        horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setSpacing(5);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
-        horizontalLayout_2->setContentsMargins(0, 0, 0, -1);
+        dataStatisticsLayout = new QHBoxLayout();
+        dataStatisticsLayout->setSpacing(5);
+        dataStatisticsLayout->setObjectName(QString::fromUtf8("dataStatisticsLayout"));
+        dataStatisticsLayout->setContentsMargins(0, 0, 0, -1);
         line_8 = new QFrame(centralwidget);
         line_8->setObjectName(QString::fromUtf8("line_8"));
         line_8->setFrameShape(QFrame::VLine);
         line_8->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_8);
+        dataStatisticsLayout->addWidget(line_8);
 
         minValueX = new QLabel(centralwidget);
         minValueX->setObjectName(QString::fromUtf8("minValueX"));
         minValueX->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(minValueX);
+        dataStatisticsLayout->addWidget(minValueX);
 
         line_2 = new QFrame(centralwidget);
         line_2->setObjectName(QString::fromUtf8("line_2"));
         line_2->setFrameShape(QFrame::VLine);
         line_2->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_2);
+        dataStatisticsLayout->addWidget(line_2);
 
         maxValueX = new QLabel(centralwidget);
         maxValueX->setObjectName(QString::fromUtf8("maxValueX"));
         maxValueX->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(maxValueX);
+        dataStatisticsLayout->addWidget(maxValueX);
 
         line_3 = new QFrame(centralwidget);
         line_3->setObjectName(QString::fromUtf8("line_3"));
         line_3->setFrameShape(QFrame::VLine);
         line_3->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_3);
+        dataStatisticsLayout->addWidget(line_3);
 
         averageValueX = new QLabel(centralwidget);
         averageValueX->setObjectName(QString::fromUtf8("averageValueX"));
         averageValueX->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(averageValueX);
+        dataStatisticsLayout->addWidget(averageValueX);
 
         line_4 = new QFrame(centralwidget);
         line_4->setObjectName(QString::fromUtf8("line_4"));
         line_4->setFrameShape(QFrame::VLine);
         line_4->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_4);
+        dataStatisticsLayout->addWidget(line_4);
 
         spanValueX = new QLabel(centralwidget);
         spanValueX->setObjectName(QString::fromUtf8("spanValueX"));
         spanValueX->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(spanValueX);
+        dataStatisticsLayout->addWidget(spanValueX);
 
         line = new QFrame(centralwidget);
         line->setObjectName(QString::fromUtf8("line"));
         line->setFrameShape(QFrame::VLine);
         line->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line);
+        dataStatisticsLayout->addWidget(line);
 
         minValueY = new QLabel(centralwidget);
         minValueY->setObjectName(QString::fromUtf8("minValueY"));
         minValueY->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(minValueY);
+        dataStatisticsLayout->addWidget(minValueY);
 
         line_5 = new QFrame(centralwidget);
         line_5->setObjectName(QString::fromUtf8("line_5"));
         line_5->setFrameShape(QFrame::VLine);
         line_5->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_5);
+        dataStatisticsLayout->addWidget(line_5);
 
         maxValueY = new QLabel(centralwidget);
         maxValueY->setObjectName(QString::fromUtf8("maxValueY"));
         maxValueY->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(maxValueY);
+        dataStatisticsLayout->addWidget(maxValueY);
 
         line_6 = new QFrame(centralwidget);
         line_6->setObjectName(QString::fromUtf8("line_6"));
         line_6->setFrameShape(QFrame::VLine);
         line_6->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_6);
+        dataStatisticsLayout->addWidget(line_6);
 
         averageValueY = new QLabel(centralwidget);
         averageValueY->setObjectName(QString::fromUtf8("averageValueY"));
         averageValueY->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(averageValueY);
+        dataStatisticsLayout->addWidget(averageValueY);
 
         line_7 = new QFrame(centralwidget);
         line_7->setObjectName(QString::fromUtf8("line_7"));
         line_7->setFrameShape(QFrame::VLine);
         line_7->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_7);
+        dataStatisticsLayout->addWidget(line_7);
 
         spanValueY = new QLabel(centralwidget);
         spanValueY->setObjectName(QString::fromUtf8("spanValueY"));
         spanValueY->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_2->addWidget(spanValueY);
+        dataStatisticsLayout->addWidget(spanValueY);
 
         line_9 = new QFrame(centralwidget);
         line_9->setObjectName(QString::fromUtf8("line_9"));
         line_9->setFrameShape(QFrame::VLine);
         line_9->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_9);
+        dataStatisticsLayout->addWidget(line_9);
 
         totalDataLength = new QLabel(centralwidget);
         totalDataLength->setObjectName(QString::fromUtf8("totalDataLength"));
 
-        horizontalLayout_2->addWidget(totalDataLength);
+        dataStatisticsLayout->addWidget(totalDataLength);
 
         line_10 = new QFrame(centralwidget);
         line_10->setObjectName(QString::fromUtf8("line_10"));
         line_10->setFrameShape(QFrame::VLine);
         line_10->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_2->addWidget(line_10);
+        dataStatisticsLayout->addWidget(line_10);
 
 
-        verticalLayout_2->addLayout(horizontalLayout_2);
+        verticalLayout_2->addLayout(dataStatisticsLayout);
 
         SimpleCsvLogAnalyzer->setCentralWidget(centralwidget);
         menubar = new QMenuBar(SimpleCsvLogAnalyzer);
@@ -364,8 +370,8 @@ public:
 
         retranslateUi(SimpleCsvLogAnalyzer);
 
-        verticalTabWidget->setCurrentIndex(0);
-        tabWidget->setCurrentIndex(0);
+        leftTab->setCurrentIndex(0);
+        rightTabs->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(SimpleCsvLogAnalyzer);
@@ -391,12 +397,13 @@ public:
         actionSave_Plot_Image->setShortcut(QApplication::translate("SimpleCsvLogAnalyzer", "S", nullptr));
 #endif // QT_NO_SHORTCUT
         label_2->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Y Axis Data List", nullptr));
+        pushButton->setText(QApplication::translate("SimpleCsvLogAnalyzer", "PushButton", nullptr));
         label_3->setText(QApplication::translate("SimpleCsvLogAnalyzer", "X Axis Data List", nullptr));
         plotSelected->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Plot Selected Data vs Index", nullptr));
         plotSelectedXY->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Plot Selected X-Y Data", nullptr));
-        verticalTabWidget->setTabText(verticalTabWidget->indexOf(verticalTabWidgetPage1), QApplication::translate("SimpleCsvLogAnalyzer", "Data", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("SimpleCsvLogAnalyzer", "Plot", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("SimpleCsvLogAnalyzer", "Data Table", nullptr));
+        leftTab->setTabText(leftTab->indexOf(verticalTabWidgetPage1), QApplication::translate("SimpleCsvLogAnalyzer", "Data", nullptr));
+        rightTabs->setTabText(rightTabs->indexOf(plotTab), QApplication::translate("SimpleCsvLogAnalyzer", "Plot", nullptr));
+        rightTabs->setTabText(rightTabs->indexOf(dataTableViewTab), QApplication::translate("SimpleCsvLogAnalyzer", "Data Table", nullptr));
         minValueX->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Min X: nan", nullptr));
         maxValueX->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Max X: nan", nullptr));
         averageValueX->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Average X: nan", nullptr));

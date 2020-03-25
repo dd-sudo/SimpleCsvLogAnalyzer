@@ -12,20 +12,22 @@ SimpleCsvLogAnalyzer::SimpleCsvLogAnalyzer(QWidget *parent)
     moveRight->setKey(Qt::Key_Right);
     connect(moveRight,SIGNAL(activated()),this,SLOT(moveRigthPressed()));
 
+    QPixmap pixmap(":/images/images/timer.png");
+    loadingSplash = new QSplashScreen(pixmap);
+
     initPlot();
+    initDataTable();
 }
 
 SimpleCsvLogAnalyzer::~SimpleCsvLogAnalyzer()
 {
     delete ui;
-
 }
 
 void SimpleCsvLogAnalyzer::on_actionExit_triggered()
 {
     cleanUpAndExit();
     exit(0);
-
 }
 
 void SimpleCsvLogAnalyzer::cleanUpAndExit()
@@ -65,6 +67,17 @@ void SimpleCsvLogAnalyzer::initPlot(){
     tracer->setStyle(QCPItemTracer::tsCrosshair);
     tracer->setPen(QPen(Qt::darkGray));
     connect(ui->plot1, &QCustomPlot::mouseMove, this, &SimpleCsvLogAnalyzer::slotMouseMove);
+}
+
+void SimpleCsvLogAnalyzer::initDataTable()
+{
+    // Create a new model with row=col=0
+    dataModel = new QStandardItemModel(0,0,this);
+
+    // Attach the model to the view
+    ui->dataTableView->setModel(dataModel);
+    // Auto adjust horizontal header labels
+    ui->dataTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 void SimpleCsvLogAnalyzer::clearPlotNDisableTracer(){
@@ -177,6 +190,22 @@ void SimpleCsvLogAnalyzer::populateStatisticsLabels(){
 
 }
 
+void SimpleCsvLogAnalyzer::clearStatisticsLabels()
+{
+    // X Axis
+    ui->minValueX->setText("Min X: nan");
+    ui->maxValueX->setText("Max X: nan");
+    ui->spanValueX->setText("Span X: nan");
+    ui->averageValueX->setText("Average X: nan");
+    // Y Axis
+    ui->minValueY->setText("Min Y: nan");
+    ui->maxValueY->setText("Max Y: nan");
+    ui->spanValueY->setText("Span Y: nan");
+    ui->averageValueY->setText("Average Y: nan");
+    //Data length
+    ui->totalDataLength->setText(QString("Data Length: N/A"));
+}
+
 void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
 {
     QString filePath = QFileDialog::getOpenFileName(this,"Select a file...","","*.csv");
@@ -185,18 +214,26 @@ void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
         qDebug() << "Dosya seçilmedi";
         return;
     }
+
+
+    loadingSplash->show();
+    qApp->processEvents();
+
     ui->dataListX->clear();
     ui->dataListY->clear();
 
     clearPlotNDisableTracer();
+    clearStatisticsLabels();
 
     csvFile.setFilePath(filePath);
     m_labels = csvFile.getCsvFileLabels();
     m_sampleValues = csvFile.getSampleValuesForLabels();
     ui->dataListY->addItems(m_labels);
     ui->dataListX->addItems(m_labels);
-    csvFile.file2TableWidget(ui->dataTable);
+    csvFile.file2DataModel(dataModel);
 
+    qApp->processEvents();
+    loadingSplash->close();
 
 }
 
@@ -207,7 +244,8 @@ void SimpleCsvLogAnalyzer::on_plotSelected_clicked()
         ui->statusbar->showMessage("Select a proper data for both x and y axis!");
         return;
     }
-
+    loadingSplash->show();
+    qApp->processEvents();
     // configure plot style
     valuePlot->setLineStyle(QCPGraph::lsLine);
     valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDot, 1));
@@ -235,6 +273,8 @@ void SimpleCsvLogAnalyzer::on_plotSelected_clicked()
     calculateStatisticalData(false,true);
     populateStatisticsLabels();
     zoomReset();
+    qApp->processEvents();
+    loadingSplash->close();
 
 }
 
@@ -245,6 +285,8 @@ void SimpleCsvLogAnalyzer::on_plotSelectedXY_clicked()
         ui->statusbar->showMessage("Select a proper data for both x and y axis!");
         return;
     }
+    loadingSplash->show();
+    qApp->processEvents();
     plotType = PLOT_Y_VS_X;
     QString nameY = ui->dataListY->selectedItems().first()->text();
     QString nameX = ui->dataListX->selectedItems().first()->text();
@@ -270,6 +312,8 @@ void SimpleCsvLogAnalyzer::on_plotSelectedXY_clicked()
     calculateStatisticalData(true,true);
     populateStatisticsLabels();
     zoomReset();
+    qApp->processEvents();
+    loadingSplash->close();
 }
 
 void SimpleCsvLogAnalyzer::slotMouseMove(QMouseEvent *event)
@@ -345,6 +389,8 @@ void SimpleCsvLogAnalyzer::on_actionSave_Plot_Image_triggered()
                                                     .arg(ui->plot1->yAxis->label().remove(QRegExp("[^a-zA-Z\\d\\s]")))
                                                     .arg(QDateTime::currentDateTime().toString("yyyy_MM_dd_hh_mm_ss")),
                                                     "*.jpg");
+    loadingSplash->show();
+    qApp->processEvents();
     qDebug() << "filePath:" << filePath;
     if(filePath.isEmpty()){
         qDebug() << "Dosya seçilmedi";
@@ -357,6 +403,9 @@ void SimpleCsvLogAnalyzer::on_actionSave_Plot_Image_triggered()
     // Bring back tracer line
     tracer->setVisible(true);
     ui->plot1->replot();
+
+    qApp->processEvents();
+    loadingSplash->close();
 }
 
 
@@ -373,4 +422,9 @@ void SimpleCsvLogAnalyzer::on_dataListY_currentRowChanged(int currentRow)
                 .arg(m_sampleValues.at(currentRow));
     }
     ui->statusbar->showMessage(s);
+}
+
+void SimpleCsvLogAnalyzer::on_pushButton_clicked()
+{
+
 }

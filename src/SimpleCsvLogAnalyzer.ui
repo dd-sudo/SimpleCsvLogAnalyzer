@@ -16,9 +16,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="mainHorizontalLayout">
       <item>
-       <widget class="QTabWidget" name="verticalTabWidget">
+       <widget class="QTabWidget" name="leftTab">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -67,6 +67,13 @@
             </property>
             <property name="text">
              <string>Y Axis Data List</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>PushButton</string>
             </property>
            </widget>
           </item>
@@ -143,11 +150,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QTabWidget" name="tabWidget">
+       <widget class="QTabWidget" name="rightTabs">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
-        <widget class="QWidget" name="tab">
+        <widget class="QWidget" name="plotTab">
          <attribute name="title">
           <string>Plot</string>
          </attribute>
@@ -165,13 +172,13 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="tab_2">
+        <widget class="QWidget" name="dataTableViewTab">
          <attribute name="title">
           <string>Data Table</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="QTableWidget" name="dataTable">
+           <widget class="QTableView" name="dataTableView">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -205,7 +212,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="dataStatisticsLayout">
       <property name="spacing">
        <number>5</number>
       </property>
