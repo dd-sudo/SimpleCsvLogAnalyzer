@@ -16,10 +16,13 @@ SimpleCsvLogAnalyzer::SimpleCsvLogAnalyzer(QWidget *parent)
     loadingSplash = new QSplashScreen(pixmap,Qt::SplashScreen);
 
     // init dataTableView custom context menu
-    tableViewContextMenu = new QMenu("Data Table Operations");
+    tableViewContextMenu = new QMenu();
+    tableViewContextMenu->addSection("Data Table Operations");
     tableViewContextMenu->addAction("Plot",this,SLOT(plotThis()));
     tableViewContextMenu->addAction("Statistics",this,SLOT(statisticsForThis()));
-    tableViewContextMenu->addAction("Hide",this,SLOT(hideThis()));
+    tableViewContextMenu->addAction("Hide Selected Columns",this,SLOT(hideTableColumns()));
+    tableViewContextMenu->addAction("Show Selected Columns Only",this,SLOT(showTableColumns()));
+    tableViewContextMenu->addAction("Show All Columns",this,SLOT(restoreTableColumns()));
 
     initPlot();
     initDataTable();
@@ -219,6 +222,19 @@ void SimpleCsvLogAnalyzer::clearStatisticsLabels()
     ui->totalDataLength->setText(QString("Data Length: N/A"));
 }
 
+void SimpleCsvLogAnalyzer::startBusy()
+{
+    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
+    loadingSplash->show();
+    qApp->processEvents();
+}
+
+void SimpleCsvLogAnalyzer::stopBusy()
+{
+    qApp->processEvents();
+    loadingSplash->close();
+}
+
 void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
 {
     QString filePath = QFileDialog::getOpenFileName(this,"Select a file...","","*.csv");
@@ -228,9 +244,7 @@ void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
         return;
     }
     ui->rightTabs->setCurrentIndex(0);
-    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
-    loadingSplash->show();
-    qApp->processEvents();
+    startBusy();
 
     ui->dataListX->clear();
     ui->dataListY->clear();
@@ -245,8 +259,7 @@ void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
     ui->dataListX->addItems(m_labels);
     csvFile.file2TableWidget(ui->dataTableWidget);
 
-    qApp->processEvents();
-    loadingSplash->close();
+    stopBusy();
 
 }
 
@@ -256,9 +269,7 @@ void SimpleCsvLogAnalyzer::plotGraph(QString xName, QString yName)
         qDebug() << "Select label(s) before plotting...";
         return;
     }
-    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
-    loadingSplash->show();
-    qApp->processEvents();
+    startBusy();
     clearPlotNDisableTracer();
 
     if(xName.isEmpty()){
@@ -300,8 +311,7 @@ void SimpleCsvLogAnalyzer::plotGraph(QString xName, QString yName)
     populateStatisticsLabels();
     zoomReset();
     ui->rightTabs->setCurrentIndex(0);
-    qApp->processEvents();
-    loadingSplash->close();
+    stopBusy();
 
 }
 
@@ -406,9 +416,7 @@ void SimpleCsvLogAnalyzer::on_actionSave_Plot_Image_triggered()
                                                     .arg(ui->plot1->yAxis->label().remove(QRegExp("[^a-zA-Z\\d\\s]")))
                                                     .arg(QDateTime::currentDateTime().toString("yyyy_MM_dd_hh_mm_ss")),
                                                     "*.jpg");
-    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
-    loadingSplash->show();
-    qApp->processEvents();
+    startBusy();
     qDebug() << "filePath:" << filePath;
     if(filePath.isEmpty()){
         qDebug() << "Dosya seçilmedi";
@@ -422,8 +430,7 @@ void SimpleCsvLogAnalyzer::on_actionSave_Plot_Image_triggered()
     tracer->setVisible(true);
     ui->plot1->replot();
 
-    qApp->processEvents();
-    loadingSplash->close();
+    stopBusy();
 }
 
 
@@ -450,14 +457,12 @@ void SimpleCsvLogAnalyzer::on_pushButton_clicked()
 void SimpleCsvLogAnalyzer::on_rightTabs_currentChanged(int index)
 {
     // Close loading indicator
-    loadingSplash->close();
+    stopBusy();
 }
 
 void SimpleCsvLogAnalyzer::on_rightTabs_tabBarClicked(int index)
 {
-    loadingSplash->move(this->x()+this->width()/2,this->y()+this->height()/2);
-    loadingSplash->show();
-    qApp->processEvents();
+    startBusy();
 }
 
 void SimpleCsvLogAnalyzer::on_dataTableWidget_customContextMenuRequested(const QPoint &pos)
@@ -466,41 +471,91 @@ void SimpleCsvLogAnalyzer::on_dataTableWidget_customContextMenuRequested(const Q
     tableViewContextMenu->exec(QCursor::pos());
 }
 
-void SimpleCsvLogAnalyzer::hideThis()
+void SimpleCsvLogAnalyzer::hideTableColumns()
 {
-    QList<QTableWidgetItem*> items = ui->dataTableWidget->selectedItems();
-    if(items.isEmpty()){
+    QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
+
+    if(!select->hasSelection()){ //check if has selection
         qDebug() << "no selection";
         return;
     }
-    qDebug() << "Hide: Selected column:" << items.first()->column()
-             << "name:" << ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text();
-    ui->dataTableWidget->hideColumn(items.first()->column());
+    startBusy();
+    QModelIndexList indexList = select->selectedColumns(); // return selected column(s)
+
+    qDebug() << "Selected columns length:" << indexList.length();
+    for(int i=0; i<indexList.length(); ++i){
+        qDebug() << "Hide column:" << indexList[i].column();
+        ui->dataTableWidget->hideColumn(indexList[i].column());
+    }
+    ui->dataTableWidget->clearSelection();
+    stopBusy();
+}
+
+void SimpleCsvLogAnalyzer::showTableColumns()
+{
+    QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
+
+    if(!select->hasSelection()){ //check if has selection
+        qDebug() << "no selection";
+        return;
+    }
+    startBusy();
+    QModelIndexList indexList = select->selectedColumns(); // return selected column(s)
+
+    // Hide all
+    for (int i=0; i<ui->dataTableWidget->columnCount(); ++i) {
+        ui->dataTableWidget->hideColumn(i);
+    }
+    ui->dataTableWidget->clearSelection();
+    // Show selected columns
+    qDebug() << "Selected columns length:" << indexList.length();
+    for(int i=0; i<indexList.length(); ++i){
+        qDebug() << "Hide column:" << indexList[i].column();
+        ui->dataTableWidget->showColumn(indexList[i].column());
+    }
+    stopBusy();
+}
+
+void SimpleCsvLogAnalyzer::restoreTableColumns()
+{
+    startBusy();
+    for (int i=0; i<ui->dataTableWidget->columnCount(); ++i) {
+        ui->dataTableWidget->showColumn(i);
+    }
+    ui->dataTableWidget->clearSelection();
+    stopBusy();
 }
 
 void SimpleCsvLogAnalyzer::plotThis()
 {
-    QList<QTableWidgetItem*> items = ui->dataTableWidget->selectedItems();
-    if(items.isEmpty()){
+    QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
+
+    if(!select->hasSelection()){ //check if has selection
         qDebug() << "no selection";
         return;
     }
-    qDebug() << "Plot: Selected column:" << items.first()->column()
-             << "name:" << ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text();
-    plotGraph("",ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text());
-
+    startBusy();
+    QModelIndexList indexList = select->selectedColumns(); // return selected column(s)
+    qDebug() << "Plot: Selected column:" << indexList.first().column()
+             << "name:" << ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text();
+    plotGraph("",ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text());
+    ui->dataTableWidget->clearSelection();
+    stopBusy();
 }
 
 void SimpleCsvLogAnalyzer::statisticsForThis()
 {
-    QList<QTableWidgetItem*> items = ui->dataTableWidget->selectedItems();
-    if(items.isEmpty()){
+    QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
+
+    if(!select->hasSelection()){ //check if has selection
         qDebug() << "no selection";
         return;
     }
-    qDebug() << "Statistics: Selected column:" << items.first()->column()
-             << "name:" << ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text();
-    statistics tmp = calculateStatisticalData(QVector<double>(),csvFile.getDataByName(ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text()));
+    startBusy();
+    QModelIndexList indexList = select->selectedColumns(); // return selected column(s)
+    qDebug() << "Statistics: Selected column:" << indexList.first().column()
+             << "name:" << ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text();
+    statistics tmp = calculateStatisticalData(QVector<double>(),csvFile.getDataByName(ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text()));
     QString s = QString("Statistics for selected data               \n"
                          "Data name:%1\n"
                          "Min:%2\n"
@@ -508,7 +563,7 @@ void SimpleCsvLogAnalyzer::statisticsForThis()
                          "Average:%4\n"
                          "Span:%5\n"
                          "Length:%6")
-            .arg(ui->dataTableWidget->horizontalHeaderItem(items.first()->column())->text())
+            .arg(ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text())
             .arg(tmp.y.min)
             .arg(tmp.y.max)
             .arg(tmp.y.average)
@@ -516,7 +571,9 @@ void SimpleCsvLogAnalyzer::statisticsForThis()
             .arg(tmp.y.length);
     QMessageBox msg;
     msg.setText(s);
+    stopBusy();
     msg.exec();
+    ui->dataTableWidget->clearSelection();
 }
 
 

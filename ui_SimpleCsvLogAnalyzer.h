@@ -204,7 +204,7 @@ public:
         dataTableWidget->setLineWidth(1);
         dataTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         dataTableWidget->setAlternatingRowColors(true);
-        dataTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+        dataTableWidget->setSelectionMode(QAbstractItemView::MultiSelection);
         dataTableWidget->setSelectionBehavior(QAbstractItemView::SelectColumns);
         dataTableWidget->setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
         dataTableWidget->setCornerButtonEnabled(false);

@@ -66,13 +66,13 @@ private slots:
     void on_pushButton_clicked();
     void on_rightTabs_currentChanged(int index);
     void on_rightTabs_tabBarClicked(int index);
-
-
     void on_dataTableWidget_customContextMenuRequested(const QPoint &pos);
 
 public slots:
     // Slots for data table view custom context menu options
-    void hideThis();
+    void hideTableColumns();
+    void showTableColumns();
+    void restoreTableColumns();
     void plotThis();
     void statisticsForThis();
 
@@ -110,6 +110,8 @@ private:
     statistics calculateStatisticalData(QVector<double> x, QVector<double> y);
     void populateStatisticsLabels();
     void clearStatisticsLabels();
+    void startBusy();
+    void stopBusy();
 
 };
 #endif // 
