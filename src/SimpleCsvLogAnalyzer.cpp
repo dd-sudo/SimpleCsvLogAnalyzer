@@ -17,12 +17,17 @@ SimpleCsvLogAnalyzer::SimpleCsvLogAnalyzer(QWidget *parent)
 
     // init dataTableView custom context menu
     tableViewContextMenu = new QMenu();
-    tableViewContextMenu->addSection("Data Table Operations");
-    tableViewContextMenu->addAction("Plot",this,SLOT(plotThis()));
-    tableViewContextMenu->addAction("Statistics",this,SLOT(statisticsForThis()));
-    tableViewContextMenu->addAction("Hide Selected Columns",this,SLOT(hideTableColumns()));
-    tableViewContextMenu->addAction("Show Selected Columns Only",this,SLOT(showTableColumns()));
-    tableViewContextMenu->addAction("Show All Columns",this,SLOT(restoreTableColumns()));
+    tableViewContextMenu->addAction("Plot",this,SLOT(plotThis_forTable()));
+    tableViewContextMenu->addAction("Statistics",this,SLOT(statisticsForThis_forTable()));
+    tableViewContextMenu->addAction("Hide Selected Columns",this,SLOT(hideTableColumns_forTable()));
+    tableViewContextMenu->addAction("Show Selected Columns Only",this,SLOT(showTableColumns_forTable()));
+    tableViewContextMenu->addAction("Show All Columns",this,SLOT(restoreTableColumns_forTable()));
+
+    // init dataTableView custom context menu
+    labelListContextMenu = new QMenu();
+    labelListContextMenu->addAction("Plot vs Record Number",this,SLOT(plotThis_forList()));
+    labelListContextMenu->addAction("Plot vs Another Data Label",this,SLOT(plotThisVsAnotherDataLabel_forList()));
+    labelListContextMenu->addAction("Statistics",this,SLOT(statisticsForThis_forList()));
 
     initPlot();
     initDataTable();
@@ -117,77 +122,91 @@ QList<double> SimpleCsvLogAnalyzer::calculateSlopeOfCurve(int valueIndex){
     return ret;
 }
 
-statistics SimpleCsvLogAnalyzer::calculateStatisticalData(QVector<double> x, QVector<double> y){
+statistics SimpleCsvLogAnalyzer::calculateStatisticalData(QVector<double> x, QVector<double> y, bool showReportMessage){
     statistics ret;
-        ret.x.min = std::numeric_limits<double>::max();
-        ret.x.max = std::numeric_limits<double>::min();
-        ret.x.span = 0;
-        ret.x.average = 0;
-        int averageArrayLen = x.length();
-        if(x.length()>0){
-            double accu = 0;
-            double tmp;
-            for(int i=0; i<x.length(); ++i){
-                tmp = x[i];
-                if(!qIsNaN(tmp)){
-                    accu += tmp;
-                } else {
-                    --averageArrayLen;
-                }
-                if(tmp<ret.x.min){
-                    ret.x.min = tmp;
-                }
-                if(tmp>ret.x.max){
-                    ret.x.max = tmp;
-                }
+    ret.x.min = std::numeric_limits<double>::max();
+    ret.x.max = std::numeric_limits<double>::min();
+    ret.x.span = 0;
+    ret.x.average = 0;
+    int averageArrayLen = x.length();
+    if(x.length()>0){
+        double accu = 0;
+        double tmp;
+        for(int i=0; i<x.length(); ++i){
+            tmp = x[i];
+            if(!qIsNaN(tmp)){
+                accu += tmp;
+            } else {
+                --averageArrayLen;
             }
-            ret.x.average = accu/averageArrayLen;
-            ret.x.span = ret.x.max - ret.x.min;
-        } else {
-            qDebug() << "No data in array!";
-            ret.x.min = NAN;
-            ret.x.max = NAN;
-            ret.x.span = NAN;
-            ret.x.average = NAN;
-        }
-        ret.x.length = x.length();
-
-
-        ret.y.min = std::numeric_limits<double>::max();
-        ret.y.max = std::numeric_limits<double>::min();
-        ret.y.span = 0;
-        ret.y.average = 0;
-        averageArrayLen = y.length();
-        if(y.length()>0){
-            double accu = 0;
-            double tmp;
-            for(int i=0; i<y.length(); ++i){
-                tmp = y[i];
-                if(!qIsNaN(tmp)){
-                    accu += tmp;
-                } else {
-                    --averageArrayLen;
-                }
-                if(tmp<ret.y.min){
-                    ret.y.min = tmp;
-                }
-                if(tmp>ret.y.max){
-                    ret.y.max = tmp;
-                }
+            if(tmp<ret.x.min){
+                ret.x.min = tmp;
             }
-            ret.y.average = accu/averageArrayLen;
-            ret.y.span = ret.y.max - ret.y.min;
-        } else {
-            qDebug() << "No data in array!";
-            ret.y.min = NAN;
-            ret.y.max = NAN;
-            ret.y.span = NAN;
-            ret.y.average = NAN;
+            if(tmp>ret.x.max){
+                ret.x.max = tmp;
+            }
         }
-        ret.y.length = y.length();
+        ret.x.average = accu/averageArrayLen;
+        ret.x.span = ret.x.max - ret.x.min;
+    } else {
+        qDebug() << "No data in array!";
+        ret.x.min = NAN;
+        ret.x.max = NAN;
+        ret.x.span = NAN;
+        ret.x.average = NAN;
+    }
+    ret.x.length = x.length();
 
-        return ret;
 
+    ret.y.min = std::numeric_limits<double>::max();
+    ret.y.max = std::numeric_limits<double>::min();
+    ret.y.span = 0;
+    ret.y.average = 0;
+    averageArrayLen = y.length();
+    if(y.length()>0){
+        double accu = 0;
+        double tmp;
+        for(int i=0; i<y.length(); ++i){
+            tmp = y[i];
+            if(!qIsNaN(tmp)){
+                accu += tmp;
+            } else {
+                --averageArrayLen;
+            }
+            if(tmp<ret.y.min){
+                ret.y.min = tmp;
+            }
+            if(tmp>ret.y.max){
+                ret.y.max = tmp;
+            }
+        }
+        ret.y.average = accu/averageArrayLen;
+        ret.y.span = ret.y.max - ret.y.min;
+    } else {
+        qDebug() << "No data in array!";
+        ret.y.min = NAN;
+        ret.y.max = NAN;
+        ret.y.span = NAN;
+        ret.y.average = NAN;
+    }
+    ret.y.length = y.length();
+    if(showReportMessage){
+        QString s = QString("Statistics for selected data\n"
+                            "Min:%1\n"
+                            "Max:%2\n"
+                            "Average:%3\n"
+                            "Span:%4\n"
+                            "Length:%5")
+                .arg(ret.y.min)
+                .arg(ret.y.max)
+                .arg(ret.y.average)
+                .arg(ret.y.span)
+                .arg(ret.y.length);
+        QMessageBox msg;
+        msg.setText(s);
+        msg.exec();
+    }
+    return ret;
 }
 
 void SimpleCsvLogAnalyzer::populateStatisticsLabels(){
@@ -235,6 +254,93 @@ void SimpleCsvLogAnalyzer::stopBusy()
     loadingSplash->close();
 }
 
+QVector<double> SimpleCsvLogAnalyzer::createDerivedDataLabel(QStringList formula)
+{
+    QVector<double> dd,tmp;
+    if(formula.isEmpty()){
+        ui->statusbar->showMessage("Empty formula for derived data!");
+        return dd;
+    }
+    qDebug() << "Formula:" << formula;
+    if(mathOperatorsList.contains(formula[0])){
+        ui->statusbar->showMessage("Illegal formula for derived data!");
+        return dd;
+    }
+    QStringList labelList;
+    for(int i=0;i<ui->dataListY->count();++i){
+        labelList << ui->dataListY->item(i)->text();
+    }
+    // Derive data using formula
+    for (int i=0;i<formula.length();++i) {
+        if(mathOperatorsList.contains(formula[i])){
+            qDebug() << "We got math op:" << formula[i];
+            switch (mathOperatorsList.indexOf(formula[i])) {
+            case 0: // +
+                if(++i<formula.length()){
+                    tmp = csvFile.getDataByName(formula[i]);
+                }
+                if(tmp.length() != dd.length()){
+                    qDebug() << "Data length error!";
+                    return dd;
+                }
+                // sum dd and tmp
+                for(int i=0;i<dd.length();++i){
+                    dd[i] += tmp[i];
+                }
+                break;
+            case 1: // -
+                if(++i<formula.length()){
+                    tmp = csvFile.getDataByName(formula[i]);
+                }
+                if(tmp.length() != dd.length()){
+                    qDebug() << "Data length error!";
+                    return dd;
+                }
+                // subtract dd and tmp
+                for(int i=0;i<dd.length();++i){
+                    dd[i] -= tmp[i];
+                }
+                break;
+            case 2: // *
+                if(++i<formula.length()){
+                    tmp = csvFile.getDataByName(formula[i]);
+                }
+                if(tmp.length() != dd.length()){
+                    qDebug() << "Data length error!";
+                    return dd;
+                }
+                // multiply dd and tmp
+                for(int i=0;i<dd.length();++i){
+                    dd[i] *= tmp[i];
+                }
+                break;
+            case 3: // /
+                if(++i<formula.length()){
+                    tmp = csvFile.getDataByName(formula[i]);
+                }
+                if(tmp.length() != dd.length()){
+                    qDebug() << "Data length error!";
+                    return dd;
+                }
+                // divide dd and tmp
+                for(int i=0;i<dd.length();++i){
+                    dd[i] /= tmp[i];
+                }
+                break;
+            }
+
+        } else if (labelList.contains(formula[i])){
+            qDebug() << "We got value label:" << formula[i];
+            tmp = csvFile.getDataByName(formula[i]);
+            if(i==0){
+                dd.append(tmp);
+            }
+        }
+    }
+    return dd;
+}
+
+
 void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
 {
     QString filePath = QFileDialog::getOpenFileName(this,"Select a file...","","*.csv");
@@ -251,6 +357,7 @@ void SimpleCsvLogAnalyzer::on_actionOpen_triggered()
 
     clearPlotNDisableTracer();
     clearStatisticsLabels();
+    qApp->processEvents();
 
     csvFile.setFilePath(filePath);
     m_labels = csvFile.getCsvFileLabels();
@@ -273,8 +380,26 @@ void SimpleCsvLogAnalyzer::plotGraph(QString xName, QString yName)
     clearPlotNDisableTracer();
 
     if(xName.isEmpty()){
+        if(yName.startsWith(mathStringStart)){
+            qDebug() << "We got derived data here, name:" << yName;
+            qDebug() << "Available derived data labels:" << derivedDataVectorLabels;
+            qDebug() << yName << "index in derivedDataVectorLabels" << derivedDataVectorLabels.indexOf(yName);
+            // Get derived data from buffer
+            if(derivedDataVectorLabels.indexOf(yName)>=0){
+                qDebug() << "We have label for " << yName;
+                if(derivedDataVector.length()>derivedDataVectorLabels.indexOf(yName)){
+                    qDebug() << "We have data for " << yName;
+                    yVals = derivedDataVector[derivedDataVectorLabels.indexOf(yName)];
+                }
+            }
+        } else {
+            yVals = csvFile.getDataByName(yName);
+        }
+        if(yVals.isEmpty()){
+            ui->statusbar->showMessage("No Y axis data to plot!");
+            return;
+        }
         plotType = PLOT_Y_VS_POINT_NUM;
-        yVals = csvFile.getDataByName(yName);
         xVals.resize(yVals.length());
         for(int i=0;i<xVals.length();++i){
             xVals[i] = i;
@@ -289,9 +414,17 @@ void SimpleCsvLogAnalyzer::plotGraph(QString xName, QString yName)
         pen.setColor(Qt::blue);
         valuePlot->setPen(pen);
     } else {
-        plotType = PLOT_Y_VS_X;
         yVals = csvFile.getDataByName(yName);
         xVals  = csvFile.getDataByName(xName);
+        if(yVals.isEmpty()){
+            ui->statusbar->showMessage("No Y axis data to plot!");
+            return;
+        }
+        if(xVals.isEmpty()){
+            ui->statusbar->showMessage("No X axis data to plot!");
+            return;
+        }
+        plotType = PLOT_Y_VS_X;
         ui->plot1->xAxis->setLabel(xName);
         ui->plot1->yAxis->setLabel(yName);
         // configure plot style
@@ -307,7 +440,7 @@ void SimpleCsvLogAnalyzer::plotGraph(QString xName, QString yName)
     valuePlot->setData(xVals,yVals);
 
     setupTracer();
-    stats = calculateStatisticalData(xVals,yVals);
+    stats = calculateStatisticalData(xVals,yVals,false);
     populateStatisticsLabels();
     zoomReset();
     ui->rightTabs->setCurrentIndex(0);
@@ -451,7 +584,30 @@ void SimpleCsvLogAnalyzer::on_dataListY_currentRowChanged(int currentRow)
 
 void SimpleCsvLogAnalyzer::on_pushButton_clicked()
 {
+    //math işini hallet
+    QStringList labelList;
+    for(int i=0;i<ui->dataListY->count();++i){
+        labelList << ui->dataListY->item(i)->text();
+    }
+    DataMath *math = new DataMath(labelList,mathOperatorsList);
+    int ret = math->exec();
+    qDebug() << "Return:" << ret;
+    qDebug() << "Math ops: " << math->mathOps;
+    if(ret){
+        QString derivedDataLabel;
+        derivedDataLabel += mathStringStart;
+        for (int i=0;i<math->mathOps.length();++i) {
+            derivedDataLabel += math->mathOps[i];
+        }
+        derivedDataLabel += mathStringEnd;
+        ui->dataListY->addItem(derivedDataLabel);
+        QVector<double> values = createDerivedDataLabel(math->mathOps);
+        qDebug() << "Derived data  name:" << derivedDataLabel << "data length:" << values.length();
+        derivedDataVector.append(values);
+        derivedDataVectorLabels.append(derivedDataLabel);
+    }
 
+    math->deleteLater();
 }
 
 void SimpleCsvLogAnalyzer::on_rightTabs_currentChanged(int index)
@@ -471,7 +627,7 @@ void SimpleCsvLogAnalyzer::on_dataTableWidget_customContextMenuRequested(const Q
     tableViewContextMenu->exec(QCursor::pos());
 }
 
-void SimpleCsvLogAnalyzer::hideTableColumns()
+void SimpleCsvLogAnalyzer::hideTableColumns_forTable()
 {
     QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
 
@@ -491,7 +647,7 @@ void SimpleCsvLogAnalyzer::hideTableColumns()
     stopBusy();
 }
 
-void SimpleCsvLogAnalyzer::showTableColumns()
+void SimpleCsvLogAnalyzer::showTableColumns_forTable()
 {
     QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
 
@@ -516,7 +672,7 @@ void SimpleCsvLogAnalyzer::showTableColumns()
     stopBusy();
 }
 
-void SimpleCsvLogAnalyzer::restoreTableColumns()
+void SimpleCsvLogAnalyzer::restoreTableColumns_forTable()
 {
     startBusy();
     for (int i=0; i<ui->dataTableWidget->columnCount(); ++i) {
@@ -526,7 +682,7 @@ void SimpleCsvLogAnalyzer::restoreTableColumns()
     stopBusy();
 }
 
-void SimpleCsvLogAnalyzer::plotThis()
+void SimpleCsvLogAnalyzer::plotThis_forTable()
 {
     QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
 
@@ -543,7 +699,7 @@ void SimpleCsvLogAnalyzer::plotThis()
     stopBusy();
 }
 
-void SimpleCsvLogAnalyzer::statisticsForThis()
+void SimpleCsvLogAnalyzer::statisticsForThis_forTable()
 {
     QItemSelectionModel *select = ui->dataTableWidget->selectionModel();
 
@@ -555,25 +711,70 @@ void SimpleCsvLogAnalyzer::statisticsForThis()
     QModelIndexList indexList = select->selectedColumns(); // return selected column(s)
     qDebug() << "Statistics: Selected column:" << indexList.first().column()
              << "name:" << ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text();
-    statistics tmp = calculateStatisticalData(QVector<double>(),csvFile.getDataByName(ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text()));
-    QString s = QString("Statistics for selected data               \n"
-                         "Data name:%1\n"
-                         "Min:%2\n"
-                         "Max:%3\n"
-                         "Average:%4\n"
-                         "Span:%5\n"
-                         "Length:%6")
-            .arg(ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text())
-            .arg(tmp.y.min)
-            .arg(tmp.y.max)
-            .arg(tmp.y.average)
-            .arg(tmp.y.span)
-            .arg(tmp.y.length);
-    QMessageBox msg;
-    msg.setText(s);
+    calculateStatisticalData(QVector<double>(),csvFile.getDataByName(ui->dataTableWidget->horizontalHeaderItem(indexList.first().column())->text()),true);
     stopBusy();
-    msg.exec();
+    ui->dataTableWidget->clearSelection();
+}
+
+void SimpleCsvLogAnalyzer::plotThis_forList()
+{
+    QItemSelectionModel *select = ui->dataListY->selectionModel();
+
+    if(!select->hasSelection()){ //check if has selection
+        qDebug() << "no selection";
+        return;
+    }
+    startBusy();
+    QModelIndexList indexList = select->selectedRows(); // return selected column(s)
+    qDebug() << "Plot: Selected column:" << indexList.first().row()
+             << "name:" << ui->dataListY->item(indexList.first().row())->text();
+    plotGraph("",ui->dataListY->item(indexList.first().row())->text());
+    ui->dataTableWidget->clearSelection();
+    stopBusy();
+}
+
+void SimpleCsvLogAnalyzer::plotThisVsAnotherDataLabel_forList()
+{
+    QItemSelectionModel *select = ui->dataListY->selectionModel();
+
+    if(!select->hasSelection()){ //check if has selection
+        qDebug() << "no selection";
+        return;
+    }
+    QStringList labelList;
+    for(int i=0;i<ui->dataListY->count();++i){
+        labelList << ui->dataListY->item(i)->text();
+    }
+    QString selectedXAxisLabel = QInputDialog::getItem(this,"Select data label for X axis","X axis data label:",labelList,0);
+    startBusy();
+    QModelIndexList indexList = select->selectedRows(); // return selected column(s)
+    qDebug() << "Plot: Selected column:" << indexList.first().row()
+             << "name:" << ui->dataListY->item(indexList.first().row())->text();
+    plotGraph(selectedXAxisLabel,ui->dataListY->item(indexList.first().row())->text());
+    ui->dataTableWidget->clearSelection();
+    stopBusy();
+}
+
+void SimpleCsvLogAnalyzer::statisticsForThis_forList()
+{
+    QItemSelectionModel *select = ui->dataListY->selectionModel();
+
+    if(!select->hasSelection()){ //check if has selection
+        qDebug() << "no selection";
+        return;
+    }
+    startBusy();
+    QModelIndexList indexList = select->selectedRows(); // return selected column(s)
+    qDebug() << "Statistics: Selected column:" << indexList.first().row()
+             << "name:" << ui->dataListY->item(indexList.first().row())->text();
+    calculateStatisticalData(QVector<double>(),csvFile.getDataByName(ui->dataListY->item(indexList.first().row())->text()),true);
+    stopBusy();
     ui->dataTableWidget->clearSelection();
 }
 
 
+void SimpleCsvLogAnalyzer::on_dataListY_customContextMenuRequested(const QPoint &pos)
+{
+    Q_UNUSED(pos)
+    labelListContextMenu->exec(QCursor::pos());
+}

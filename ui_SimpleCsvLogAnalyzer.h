@@ -43,9 +43,10 @@ public:
     QTabWidget *leftTab;
     QWidget *verticalTabWidgetPage1;
     QVBoxLayout *verticalLayout;
-    QLabel *label_2;
     QPushButton *pushButton;
+    QLabel *label_2;
     QListWidget *dataListY;
+    QFrame *line_11;
     QLabel *label_3;
     QListWidget *dataListX;
     QPushButton *plotSelected;
@@ -117,6 +118,12 @@ public:
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
         verticalLayout->setContentsMargins(5, 5, 5, 5);
+        pushButton = new QPushButton(verticalTabWidgetPage1);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+        pushButton->setMaximumSize(QSize(16777215, 32));
+
+        verticalLayout->addWidget(pushButton);
+
         label_2 = new QLabel(verticalTabWidgetPage1);
         label_2->setObjectName(QString::fromUtf8("label_2"));
         QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Maximum);
@@ -124,38 +131,41 @@ public:
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(label_2->sizePolicy().hasHeightForWidth());
         label_2->setSizePolicy(sizePolicy1);
+        label_2->setMaximumSize(QSize(16777215, 15));
 
         verticalLayout->addWidget(label_2);
 
-        pushButton = new QPushButton(verticalTabWidgetPage1);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
-
-        verticalLayout->addWidget(pushButton);
-
         dataListY = new QListWidget(verticalTabWidgetPage1);
         dataListY->setObjectName(QString::fromUtf8("dataListY"));
-        QSizePolicy sizePolicy2(QSizePolicy::Maximum, QSizePolicy::Maximum);
-        sizePolicy2.setHorizontalStretch(0);
-        sizePolicy2.setVerticalStretch(0);
-        sizePolicy2.setHeightForWidth(dataListY->sizePolicy().hasHeightForWidth());
-        dataListY->setSizePolicy(sizePolicy2);
+        sizePolicy.setHeightForWidth(dataListY->sizePolicy().hasHeightForWidth());
+        dataListY->setSizePolicy(sizePolicy);
+        dataListY->setContextMenuPolicy(Qt::CustomContextMenu);
+        dataListY->setDragEnabled(true);
         dataListY->setDragDropOverwriteMode(true);
         dataListY->setDragDropMode(QAbstractItemView::DropOnly);
         dataListY->setDefaultDropAction(Qt::CopyAction);
 
         verticalLayout->addWidget(dataListY);
 
+        line_11 = new QFrame(verticalTabWidgetPage1);
+        line_11->setObjectName(QString::fromUtf8("line_11"));
+        line_11->setFrameShape(QFrame::HLine);
+        line_11->setFrameShadow(QFrame::Sunken);
+
+        verticalLayout->addWidget(line_11);
+
         label_3 = new QLabel(verticalTabWidgetPage1);
         label_3->setObjectName(QString::fromUtf8("label_3"));
         sizePolicy1.setHeightForWidth(label_3->sizePolicy().hasHeightForWidth());
         label_3->setSizePolicy(sizePolicy1);
+        label_3->setMaximumSize(QSize(16777215, 15));
 
         verticalLayout->addWidget(label_3);
 
         dataListX = new QListWidget(verticalTabWidgetPage1);
         dataListX->setObjectName(QString::fromUtf8("dataListX"));
-        sizePolicy2.setHeightForWidth(dataListX->sizePolicy().hasHeightForWidth());
-        dataListX->setSizePolicy(sizePolicy2);
+        sizePolicy.setHeightForWidth(dataListX->sizePolicy().hasHeightForWidth());
+        dataListX->setSizePolicy(sizePolicy);
         dataListX->setDragDropMode(QAbstractItemView::DragOnly);
         dataListX->setSelectionMode(QAbstractItemView::SingleSelection);
 
@@ -163,12 +173,13 @@ public:
 
         plotSelected = new QPushButton(verticalTabWidgetPage1);
         plotSelected->setObjectName(QString::fromUtf8("plotSelected"));
-        plotSelected->setMaximumSize(QSize(300, 16777215));
+        plotSelected->setMaximumSize(QSize(300, 32));
 
         verticalLayout->addWidget(plotSelected);
 
         plotSelectedXY = new QPushButton(verticalTabWidgetPage1);
         plotSelectedXY->setObjectName(QString::fromUtf8("plotSelectedXY"));
+        plotSelectedXY->setMaximumSize(QSize(16777215, 32));
 
         verticalLayout->addWidget(plotSelectedXY);
 
@@ -351,7 +362,7 @@ public:
         SimpleCsvLogAnalyzer->setCentralWidget(centralwidget);
         menubar = new QMenuBar(SimpleCsvLogAnalyzer);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 774, 21));
+        menubar->setGeometry(QRect(0, 0, 774, 26));
         menuFile = new QMenu(menubar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuPlot = new QMenu(menubar);
@@ -398,8 +409,8 @@ public:
 #ifndef QT_NO_SHORTCUT
         actionSave_Plot_Image->setShortcut(QApplication::translate("SimpleCsvLogAnalyzer", "S", nullptr));
 #endif // QT_NO_SHORTCUT
-        label_2->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Y Axis Data List", nullptr));
         pushButton->setText(QApplication::translate("SimpleCsvLogAnalyzer", "PushButton", nullptr));
+        label_2->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Y Axis Data List", nullptr));
         label_3->setText(QApplication::translate("SimpleCsvLogAnalyzer", "X Axis Data List", nullptr));
         plotSelected->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Plot Selected Data vs Index", nullptr));
         plotSelectedXY->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Plot Selected X-Y Data", nullptr));

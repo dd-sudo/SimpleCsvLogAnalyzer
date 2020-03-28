@@ -17,16 +17,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     src/CsvFileProcessor.cpp \
+    src/DataMath.cpp \
     src/QCustomPlot/qcustomplot.cpp \
     src/main.cpp \
     src/SimpleCsvLogAnalyzer.cpp
 
 HEADERS += \
     src/CsvFileProcessor.h \
+    src/DataMath.h \
     src/QCustomPlot/qcustomplot.h \
     src/SimpleCsvLogAnalyzer.h
 
 FORMS += \
+    src/DataMath.ui \
     src/SimpleCsvLogAnalyzer.ui
 
 # Default rules for deployment.

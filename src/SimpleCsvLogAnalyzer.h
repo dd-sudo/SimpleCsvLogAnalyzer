@@ -11,6 +11,7 @@
 
 #include "QCustomPlot/qcustomplot.h"
 #include "CsvFileProcessor.h"
+#include "DataMath.h"
 
 #include <limits>
 
@@ -67,14 +68,19 @@ private slots:
     void on_rightTabs_currentChanged(int index);
     void on_rightTabs_tabBarClicked(int index);
     void on_dataTableWidget_customContextMenuRequested(const QPoint &pos);
+    void on_dataListY_customContextMenuRequested(const QPoint &pos);
 
 public slots:
     // Slots for data table view custom context menu options
-    void hideTableColumns();
-    void showTableColumns();
-    void restoreTableColumns();
-    void plotThis();
-    void statisticsForThis();
+    void hideTableColumns_forTable();
+    void showTableColumns_forTable();
+    void restoreTableColumns_forTable();
+    void plotThis_forTable();
+    void statisticsForThis_forTable();
+
+    void plotThis_forList();
+    void plotThisVsAnotherDataLabel_forList();
+    void statisticsForThis_forList();
 
 
 private:
@@ -86,11 +92,17 @@ private:
     QShortcut *moveRight,*moveLeft;
     QSplashScreen *loadingSplash;
     QMenu *tableViewContextMenu;
+    QMenu *labelListContextMenu;
     double mousePlotCoordX = 0;
     double mousePlotCoordY = 0;
     QVector<double> xVals;
     QVector<double> yVals;
+    QVector<QVector<double>> derivedDataVector;
+    QVector<QString> derivedDataVectorLabels;
     statistics stats;
+    QStringList mathOperatorsList = QStringList() << "+" << "-" << "*" << "/";
+    QString mathStringStart = QString("__derived(");
+    QString mathStringEnd = QString(")__");
 
     QStringList m_labels,m_sampleValues;
     int plotType = PLOT_NONE;
@@ -107,11 +119,12 @@ private:
     QList<double> calculateSlopeOfCurve(int valueIndex);
     void clearPlotNDisableTracer();
     void setupTracer();
-    statistics calculateStatisticalData(QVector<double> x, QVector<double> y);
+    statistics calculateStatisticalData(QVector<double> x, QVector<double> y, bool showReportMessage);
     void populateStatisticsLabels();
     void clearStatisticsLabels();
     void startBusy();
     void stopBusy();
+    QVector<double> createDerivedDataLabel(QStringList formula);
 
 };
 #endif // 
