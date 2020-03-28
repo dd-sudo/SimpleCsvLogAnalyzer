@@ -325,6 +325,9 @@ QVector<double> SimpleCsvLogAnalyzer::createDerivedDataLabel(QStringList formula
                 // divide dd and tmp
                 for(int i=0;i<dd.length();++i){
                     dd[i] /= tmp[i];
+                    if((dd[i] == std::numeric_limits<double>::infinity())||(dd[i] == -1*std::numeric_limits<float>::infinity())){
+                        dd[i] = NAN;
+                    }
                 }
                 break;
             }
@@ -428,8 +431,8 @@ void SimpleCsvLogAnalyzer::plotGraph(QString xName, QString yName)
         ui->plot1->xAxis->setLabel(xName);
         ui->plot1->yAxis->setLabel(yName);
         // configure plot style
-        valuePlot->setLineStyle(QCPGraph::lsNone);
-        valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssPlus, 3));
+        valuePlot->setLineStyle(QCPGraph::lsLine);
+        valuePlot->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDot, 3));
         valuePlot->setData(xVals,yVals);
         QPen pen = valuePlot->pen();
         pen.setColor(Qt::red);

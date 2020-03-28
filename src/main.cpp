@@ -2,6 +2,8 @@
 
 #include <QApplication>
 
+// Application Icon made by Freepik from www.flaticon.com
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

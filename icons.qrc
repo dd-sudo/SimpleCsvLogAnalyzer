@@ -1,6 +1,9 @@
 <RCC>
-    <qresource prefix="/icon"/>
+    <qresource prefix="/icon">
+        <file>images/analyzing_icon.ico</file>
+    </qresource>
     <qresource prefix="/images">
         <file>images/timer.png</file>
+        <file>images/analyzing.png</file>
     </qresource>
 </RCC>
