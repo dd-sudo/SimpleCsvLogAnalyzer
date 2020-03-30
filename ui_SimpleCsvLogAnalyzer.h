@@ -43,7 +43,7 @@ public:
     QTabWidget *leftTab;
     QWidget *verticalTabWidgetPage1;
     QVBoxLayout *verticalLayout;
-    QPushButton *pushButton;
+    QPushButton *DataDerivator;
     QLabel *label_2;
     QListWidget *dataListY;
     QFrame *line_11;
@@ -118,11 +118,11 @@ public:
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
         verticalLayout->setContentsMargins(5, 5, 5, 5);
-        pushButton = new QPushButton(verticalTabWidgetPage1);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
-        pushButton->setMaximumSize(QSize(16777215, 32));
+        DataDerivator = new QPushButton(verticalTabWidgetPage1);
+        DataDerivator->setObjectName(QString::fromUtf8("DataDerivator"));
+        DataDerivator->setMaximumSize(QSize(16777215, 32));
 
-        verticalLayout->addWidget(pushButton);
+        verticalLayout->addWidget(DataDerivator);
 
         label_2 = new QLabel(verticalTabWidgetPage1);
         label_2->setObjectName(QString::fromUtf8("label_2"));
@@ -362,7 +362,7 @@ public:
         SimpleCsvLogAnalyzer->setCentralWidget(centralwidget);
         menubar = new QMenuBar(SimpleCsvLogAnalyzer);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 774, 26));
+        menubar->setGeometry(QRect(0, 0, 774, 21));
         menuFile = new QMenu(menubar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
         menuPlot = new QMenu(menubar);
@@ -409,7 +409,7 @@ public:
 #ifndef QT_NO_SHORTCUT
         actionSave_Plot_Image->setShortcut(QApplication::translate("SimpleCsvLogAnalyzer", "S", nullptr));
 #endif // QT_NO_SHORTCUT
-        pushButton->setText(QApplication::translate("SimpleCsvLogAnalyzer", "PushButton", nullptr));
+        DataDerivator->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Data Derivator", nullptr));
         label_2->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Y Axis Data List", nullptr));
         label_3->setText(QApplication::translate("SimpleCsvLogAnalyzer", "X Axis Data List", nullptr));
         plotSelected->setText(QApplication::translate("SimpleCsvLogAnalyzer", "Plot Selected Data vs Index", nullptr));

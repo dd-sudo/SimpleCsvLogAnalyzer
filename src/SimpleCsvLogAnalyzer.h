@@ -64,11 +64,11 @@ private slots:
     void on_actionZoom_Reset_triggered();
     void on_actionSave_Plot_Image_triggered();
     void on_dataListY_currentRowChanged(int currentRow);
-    void on_pushButton_clicked();
     void on_rightTabs_currentChanged(int index);
     void on_rightTabs_tabBarClicked(int index);
     void on_dataTableWidget_customContextMenuRequested(const QPoint &pos);
     void on_dataListY_customContextMenuRequested(const QPoint &pos);
+    void on_DataDerivator_clicked();
 
 public slots:
     // Slots for data table view custom context menu options
@@ -77,7 +77,6 @@ public slots:
     void restoreTableColumns_forTable();
     void plotThis_forTable();
     void statisticsForThis_forTable();
-
     void plotThis_forList();
     void plotThisVsAnotherDataLabel_forList();
     void statisticsForThis_forList();

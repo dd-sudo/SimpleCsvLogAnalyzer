@@ -107,7 +107,11 @@ void SimpleCsvLogAnalyzer::zoomReset(){
     // rescales Y axis using min and max of Y axis values, with a margin of 1/10th of the span
     // to provide better visibilty for peaks and valleys in plot curve
     valuePlot->rescaleKeyAxis();
-    ui->plot1->yAxis->setRange(stats.y.min-0.1*stats.y.span,stats.y.max+0.1*stats.y.span);
+    double span = stats.y.span;
+    if(span==0){
+        span = 10;
+    }
+    ui->plot1->yAxis->setRange(stats.y.min-0.1*span,stats.y.max+0.1*span);
     ui->plot1->replot();
 }
 
@@ -585,33 +589,6 @@ void SimpleCsvLogAnalyzer::on_dataListY_currentRowChanged(int currentRow)
     ui->statusbar->showMessage(s);
 }
 
-void SimpleCsvLogAnalyzer::on_pushButton_clicked()
-{
-    //math işini hallet
-    QStringList labelList;
-    for(int i=0;i<ui->dataListY->count();++i){
-        labelList << ui->dataListY->item(i)->text();
-    }
-    DataMath *math = new DataMath(labelList,mathOperatorsList);
-    int ret = math->exec();
-    qDebug() << "Return:" << ret;
-    qDebug() << "Math ops: " << math->mathOps;
-    if(ret){
-        QString derivedDataLabel;
-        derivedDataLabel += mathStringStart;
-        for (int i=0;i<math->mathOps.length();++i) {
-            derivedDataLabel += math->mathOps[i];
-        }
-        derivedDataLabel += mathStringEnd;
-        ui->dataListY->addItem(derivedDataLabel);
-        QVector<double> values = createDerivedDataLabel(math->mathOps);
-        qDebug() << "Derived data  name:" << derivedDataLabel << "data length:" << values.length();
-        derivedDataVector.append(values);
-        derivedDataVectorLabels.append(derivedDataLabel);
-    }
-
-    math->deleteLater();
-}
 
 void SimpleCsvLogAnalyzer::on_rightTabs_currentChanged(int index)
 {
@@ -780,4 +757,33 @@ void SimpleCsvLogAnalyzer::on_dataListY_customContextMenuRequested(const QPoint 
 {
     Q_UNUSED(pos)
     labelListContextMenu->exec(QCursor::pos());
+}
+
+void SimpleCsvLogAnalyzer::on_DataDerivator_clicked()
+{
+    QStringList labelList;
+    for(int i=0;i<ui->dataListY->count();++i){
+        if(!ui->dataListY->item(i)->text().startsWith(mathStringStart)){
+        labelList << ui->dataListY->item(i)->text();
+        }
+    }
+    DataMath *math = new DataMath(labelList,mathOperatorsList);
+    int ret = math->exec();
+    qDebug() << "Return:" << ret;
+    qDebug() << "Math ops: " << math->mathOps;
+    if(ret){
+        QString derivedDataLabel;
+        derivedDataLabel += mathStringStart;
+        for (int i=0;i<math->mathOps.length();++i) {
+            derivedDataLabel += math->mathOps[i];
+        }
+        derivedDataLabel += mathStringEnd;
+        ui->dataListY->addItem(derivedDataLabel);
+        QVector<double> values = createDerivedDataLabel(math->mathOps);
+        qDebug() << "Derived data  name:" << derivedDataLabel << "data length:" << values.length();
+        derivedDataVector.append(values);
+        derivedDataVectorLabels.append(derivedDataLabel);
+    }
+
+    math->deleteLater();
 }

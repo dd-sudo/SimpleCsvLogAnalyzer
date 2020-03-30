@@ -29,6 +29,7 @@ public:
     QHBoxLayout *horizontalLayout;
     QListWidget *dataLabels;
     QListWidget *operatorList;
+    QLabel *label_2;
     QHBoxLayout *horizontalLayout_2;
     QLabel *label;
     QLineEdit *dataMath;
@@ -60,6 +61,12 @@ public:
 
 
         verticalLayout->addLayout(horizontalLayout);
+
+        label_2 = new QLabel(DataMath);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setAlignment(Qt::AlignCenter);
+
+        verticalLayout->addWidget(label_2);
 
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
@@ -101,6 +108,7 @@ public:
     void retranslateUi(QDialog *DataMath)
     {
         DataMath->setWindowTitle(QApplication::translate("DataMath", "Create new derived data (Data Math)", nullptr));
+        label_2->setText(QApplication::translate("DataMath", "Math operations are evaluated left to right. Does not consider order of operation!", nullptr));
         label->setText(QApplication::translate("DataMath", "Data Math:", nullptr));
 #ifndef QT_NO_TOOLTIP
         dataMath->setToolTip(QApplication::translate("DataMath", "A derived data element is a data element derived from other data elements using a mathematical, logical, or other type of transformation, e.g. arithmetic formula, composition, aggregation.", nullptr));

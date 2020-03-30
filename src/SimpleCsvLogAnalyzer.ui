@@ -58,7 +58,7 @@
            <number>5</number>
           </property>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="DataDerivator">
             <property name="maximumSize">
              <size>
               <width>16777215</width>
@@ -66,7 +66,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string>Data Derivator</string>
             </property>
            </widget>
           </item>
@@ -435,7 +435,7 @@
      <x>0</x>
      <y>0</y>
      <width>774</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

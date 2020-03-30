@@ -13,6 +13,8 @@ DataMath::DataMath(QStringList labelList,QStringList opList, QWidget *parent) :
     for(int i=0;i<opList.length();++i){
         ui->operatorList->addItem(opList[i]);
     }
+    ui->operatorList->setEnabled(false);
+    ui->dataLabels->setEnabled(true);
 }
 
 DataMath::~DataMath()
@@ -27,6 +29,9 @@ void DataMath::on_dataLabels_itemDoubleClicked(QListWidgetItem *item)
     for (int i=0;i<mathOps.length();++i) {
         ui->dataMath->setText(ui->dataMath->text()+mathOps[i]);
     }
+    if(mathOps.length()==1){
+        ui->operatorList->setEnabled(true);
+    }
 }
 
 void DataMath::on_operatorList_itemDoubleClicked(QListWidgetItem *item)
@@ -36,6 +41,7 @@ void DataMath::on_operatorList_itemDoubleClicked(QListWidgetItem *item)
     for (int i=0;i<mathOps.length();++i) {
         ui->dataMath->setText(ui->dataMath->text()+mathOps[i]);
     }
+
 }
 
 void DataMath::on_clear_clicked()
